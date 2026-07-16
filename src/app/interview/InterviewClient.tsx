@@ -375,9 +375,8 @@ export default function InterviewClient() {
           <div className="my-auto">
             <h1 className="text-3xl font-semibold mb-4">That&apos;s everything.</h1>
             <p className="text-[#a8b0c0] leading-relaxed">
-              We&apos;re assembling your dossier now. You&apos;ll get an email when the draft
-              is ready for your review, and nothing goes anywhere until you&apos;ve
-              approved every word.
+              We&apos;re assembling your dossier now. We&apos;ll send you the draft link
+              directly, and nothing goes anywhere until you&apos;ve approved every word.
             </p>
           </div>
         )}

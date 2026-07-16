@@ -21,10 +21,10 @@ export default function Home() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           <a
-            href="mailto:wade@kerzie.ai?subject=TrueSeat%20founding%20cohort"
+            href="/interview"
             className="rounded-md bg-[#6B9FD4] px-6 py-3 font-medium text-[#0e1116] hover:bg-[#8ab4e0] transition-colors"
           >
-            Join the founding cohort
+            Start free with your resume
           </a>
           <a
             href="/d/sample"
@@ -33,9 +33,19 @@ export default function Home() {
             See a sample dossier
           </a>
         </div>
-        <div className="mt-6">
-          <p className="text-sm text-[#6d7585]">
-            Launching August 2026. Built in public.
+        <div className="mt-6 max-w-2xl">
+          <p className="text-sm text-[#6d7585] leading-relaxed">
+            Your resume gets you what it&apos;s always gotten you. The interview is
+            where you become more than it.
+          </p>
+          <p className="text-sm text-[#6d7585] mt-3">
+            Launching August 2026. Built in public. Founding cohort:{" "}
+            <a
+              href="mailto:wade@kerzie.ai?subject=TrueSeat%20founding%20cohort"
+              className="underline underline-offset-4 hover:text-[#8ab4e0]"
+            >
+              wade@kerzie.ai
+            </a>
           </p>
         </div>
       </div>

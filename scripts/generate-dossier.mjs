@@ -62,6 +62,7 @@ if (useSupabase) {
     candidateName: r.candidate_name ?? undefined,
     phase: r.phase,
     turns: r.turns ?? [],
+    resumeText: r.resume_text ?? undefined,
   };
 } else {
   session = JSON.parse(readFileSync(`.data/sessions/${sessionId}.json`, "utf8"));
@@ -101,7 +102,15 @@ Hard rules:
 
 Return ONLY the dossier JSON, no prose. It must validate against this JSON Schema:
 ${JSON.stringify(schema)}`,
-  messages: [{ role: "user", content: `Interview transcript:\n\n${transcript}` }],
+  messages: [
+    {
+      role: "user",
+      content:
+        (session.resumeText
+          ? `Candidate's uploaded resume (UNVERIFIED, candidate-provided; anything appearing ONLY here and never discussed in the interview stays tier 0 and should generally be omitted from headline_numbers):\n---\n${session.resumeText}\n---\n\n`
+          : "") + `Interview transcript:\n\n${transcript}`,
+    },
+  ],
 }).finalMessage();
 
 const text = response.content

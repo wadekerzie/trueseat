@@ -31,6 +31,7 @@ type Row = {
   phase: InterviewSession["phase"];
   current_question: string;
   turns: InterviewSession["turns"];
+  resume_text: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -42,6 +43,7 @@ function toSession(row: Row): InterviewSession {
     phase: row.phase,
     currentQuestion: row.current_question,
     turns: row.turns ?? [],
+    resumeText: row.resume_text ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -80,6 +82,7 @@ export async function saveSession(session: InterviewSession): Promise<void> {
         phase: session.phase,
         current_question: session.currentQuestion,
         turns: session.turns,
+        resume_text: session.resumeText ?? null,
         created_at: session.createdAt,
         updated_at: session.updatedAt,
       }),

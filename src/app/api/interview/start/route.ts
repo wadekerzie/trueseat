@@ -6,7 +6,11 @@ import type { InterviewSession } from "@/lib/types";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { question, phase } = firstQuestion();
+  const resumeText =
+    typeof body.resumeText === "string" && body.resumeText.length >= 100
+      ? body.resumeText.slice(0, 15000)
+      : undefined;
+  const { question, phase } = firstQuestion(Boolean(resumeText));
   const now = new Date().toISOString();
   const session: InterviewSession = {
     id: randomUUID(),
@@ -14,6 +18,7 @@ export async function POST(req: Request) {
     phase,
     currentQuestion: question,
     turns: [],
+    resumeText,
     createdAt: now,
     updatedAt: now,
   };

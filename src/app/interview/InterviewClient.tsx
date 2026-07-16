@@ -32,6 +32,8 @@ export default function InterviewClient() {
   const [pendingNext, setPendingNext] = useState<{ question: string; phase: string; done: boolean } | null>(null);
   const [typed, setTyped] = useState("");
   const [showTyping, setShowTyping] = useState(false);
+  const [resumeText, setResumeText] = useState<string | null>(null);
+  const [resumeStatus, setResumeStatus] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
 
@@ -59,7 +61,11 @@ export default function InterviewClient() {
   const start = useCallback(async () => {
     setStage("processing");
     try {
-      const res = await fetch("/api/interview/start", { method: "POST", body: "{}" });
+      const res = await fetch("/api/interview/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resumeText ? { resumeText } : {}),
+      });
       const s = await res.json();
       localStorage.setItem("trueseat_session", s.sessionId);
       setSessionId(s.sessionId);
@@ -69,6 +75,25 @@ export default function InterviewClient() {
     } catch {
       setErrorMsg("Couldn't start the interview. Refresh and try again.");
       setStage("error");
+    }
+  }, [resumeText]);
+
+  const uploadResume = useCallback(async (file: File) => {
+    setResumeStatus("parsing");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/resume", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "parse failed");
+      setResumeText(data.text);
+      setResumeStatus(`✓ ${file.name} read (${Math.round(data.chars / 1000)}k chars)`);
+    } catch (err) {
+      setResumeStatus(
+        err instanceof Error && err.message !== "parse failed"
+          ? `Couldn't read that: ${err.message}`
+          : "Couldn't read that file — PDF, docx, or txt work best."
+      );
     }
   }, []);
 
@@ -169,12 +194,42 @@ export default function InterviewClient() {
             <p className="text-[#a8b0c0] leading-relaxed mb-8">
               Everything you say belongs to you. Nothing ships without your review.
             </p>
+            <div className="mb-8 rounded-md border border-[#2a3242] bg-[#12161f] p-5">
+              <p className="text-sm text-[#c8cedb] mb-1">
+                Have a resume? Start with it — free.
+              </p>
+              <p className="text-xs text-[#6d7585] mb-3 leading-relaxed">
+                Your resume gets you what it&apos;s always gotten you. The interview is
+                where you become more than it — but it gives us a head start on sharper
+                questions.
+              </p>
+              <label
+                className="inline-block cursor-pointer rounded-md border border-[#3a4456] px-4 py-2 text-sm text-[#c8cedb] hover:border-[#6B9FD4] transition-colors"
+              >
+                {resumeText ? "Replace resume" : "Upload resume (PDF, docx, txt)"}
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.txt,application/pdf,text/plain"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadResume(f);
+                  }}
+                />
+              </label>
+              {resumeStatus && (
+                <p className="text-xs mt-2 text-[#a8b0c0]">
+                  {resumeStatus === "parsing" ? "Reading your resume…" : resumeStatus}
+                </p>
+              )}
+            </div>
             <button
               onClick={start}
-              className="rounded-md px-6 py-3 font-medium text-[#0e1116] transition-colors"
+              disabled={resumeStatus === "parsing"}
+              className="rounded-md px-6 py-3 font-medium text-[#0e1116] transition-colors disabled:opacity-50"
               style={{ backgroundColor: ACCENT }}
             >
-              Start the interview
+              {resumeText ? "Start the interview with my resume" : "Start the interview"}
             </button>
           </div>
         )}

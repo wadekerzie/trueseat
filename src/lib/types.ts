@@ -30,6 +30,7 @@ export interface InterviewSession {
   phase: Phase;
   currentQuestion: string;
   turns: Turn[];
+  resumeText?: string; // free-tier upload, parsed; unverified candidate-provided claims
   createdAt: string;
   updatedAt: string;
 }

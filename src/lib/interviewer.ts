@@ -116,6 +116,10 @@ async function claudeNext(session: InterviewSession): Promise<{
     .map((t) => `[${t.phase}] Q: ${t.question}\nA: ${t.answer}`)
     .join("\n\n");
 
+  const resumeContext = session.resumeText
+    ? `\nThe candidate uploaded their resume (UNVERIFIED, candidate-provided — treat every claim in it as tier 0 until interviewed):\n---\n${session.resumeText.slice(0, 12000)}\n---\nUse it to ask sharper questions ("your resume says X — walk me through the reality of that") and to notice what the resume omits. Never treat resume claims as established fact.\n`
+    : "";
+
   const response = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 1000,
@@ -125,7 +129,7 @@ async function claudeNext(session: InterviewSession): Promise<{
       `You are conducting phase "${spec.phase}" of a six-phase whole-person interview.\n` +
       `Phase objective: ${spec.objective}\n` +
       `Seed questions you may adapt: ${spec.seedQuestions.join(" | ")}\n` +
-      `Remaining phases after this one: ${remainingPhases.join(", ") || "none"}.\n${GUARDRAILS}\n` +
+      `Remaining phases after this one: ${remainingPhases.join(", ") || "none"}.\n${resumeContext}${GUARDRAILS}\n` +
       `Respond with ONLY a JSON object: {"question": string, "advance_phase": boolean, "interview_complete": boolean}. ` +
       `Set advance_phase true when this phase's objective is met and your question opens the next phase. ` +
       `Set interview_complete true only when the witnesses phase is finished; then question should be a warm sign-off.`,
@@ -162,6 +166,13 @@ export async function nextQuestion(session: InterviewSession) {
   return scriptedNext(session);
 }
 
-export function firstQuestion() {
+export function firstQuestion(hasResume = false) {
+  if (hasResume) {
+    return {
+      question:
+        "I've read your resume — so I have the official version. Now give me the real one: walk me through the shape of your career the way you'd tell it to a friend over dinner, not the way the resume tells it.",
+      phase: PHASES[0].phase,
+    };
+  }
   return { question: PHASES[0].seedQuestions[0], phase: PHASES[0].phase };
 }

@@ -7,15 +7,15 @@ export interface DossierData {
   headline_numbers: { claim: string; tier: number; adjudicated?: boolean }[];
   capabilities: { capability: string; situation: string; tier: number }[];
   operating_profile: {
-    dimensions: { dimension: string; profile: string; alignment?: string }[];
-    manager_manual: Record<string, string>;
-    micro_references: {
+    dimensions?: { dimension: string; profile: string; alignment?: string }[];
+    manager_manual?: Record<string, string>;
+    micro_references?: {
       id: string;
       relationship: string;
       confirmations?: string[];
     }[];
   };
-  trajectory: { arc: string; growth_edges: string[] };
+  trajectory?: { arc: string; growth_edges?: string[] };
   meta?: { candidate_reviewed?: boolean };
 }
 
@@ -62,6 +62,12 @@ export default function DossierView({
   banner?: { text: string; tone: "sample" | "draft" } | null;
   footerNote?: string;
 }) {
+  const numbers = d.headline_numbers ?? [];
+  const capabilities = d.capabilities ?? [];
+  const dimensions = d.operating_profile?.dimensions ?? [];
+  const managerManual = d.operating_profile?.manager_manual ?? {};
+  const references = d.operating_profile?.micro_references ?? [];
+  const growthEdges = d.trajectory?.growth_edges ?? [];
   return (
     <main className="min-h-screen bg-[#0e1116] text-[#e8eaf0]">
       <div className="mx-auto w-full max-w-3xl px-6 py-16">
@@ -85,7 +91,7 @@ export default function DossierView({
 
         <Section title="The numbers they stand behind">
           <ul className="space-y-4">
-            {d.headline_numbers.map((n, i) => (
+            {numbers.map((n, i) => (
               <li key={i} className="border-l-2 border-[#2a3242] pl-4">
                 <p className="text-lg leading-snug mb-1">{n.claim}</p>
                 <div className="flex gap-2 items-center">
@@ -103,7 +109,7 @@ export default function DossierView({
 
         <Section title="Situated capabilities">
           <ul className="space-y-6">
-            {d.capabilities.map((c, i) => (
+            {capabilities.map((c, i) => (
               <li key={i}>
                 <p className="text-lg mb-1">{c.capability}</p>
                 <p className="text-sm text-[#a8b0c0] mb-2">{c.situation}</p>
@@ -115,7 +121,7 @@ export default function DossierView({
 
         <Section title="How they operate">
           <div className="space-y-6">
-            {d.operating_profile.dimensions.map((dim, i) => (
+            {dimensions.map((dim, i) => (
               <div key={i}>
                 <p className="text-sm uppercase tracking-wide text-[#6d7585] mb-1">
                   {dim.dimension.replace(/_/g, " ")}
@@ -133,7 +139,7 @@ export default function DossierView({
 
         <Section title="The manager manual">
           <dl className="space-y-3">
-            {Object.entries(d.operating_profile.manager_manual).map(([k, v]) => (
+            {Object.entries(managerManual).map(([k, v]) => (
               <div key={k}>
                 <dt className="text-sm uppercase tracking-wide text-[#6d7585]">
                   {k.replace(/_/g, " ")}
@@ -144,10 +150,10 @@ export default function DossierView({
           </dl>
         </Section>
 
-        {d.operating_profile.micro_references.length > 0 && (
+        {references.length > 0 && (
           <Section title="Witnesses">
             <ul className="space-y-4">
-              {d.operating_profile.micro_references.map((r) => (
+              {references.map((r) => (
                 <li key={r.id} className="border-l-2 border-[#2a3242] pl-4">
                   <p className="text-sm text-[#a8b0c0] mb-1">{r.relationship}</p>
                   <ul className="list-disc list-inside text-[#c8cedb] text-sm space-y-1">
@@ -160,10 +166,10 @@ export default function DossierView({
         )}
 
         <Section title="Trajectory">
-          <p className="leading-relaxed text-[#c8cedb] mb-3">{d.trajectory.arc}</p>
-          {d.trajectory.growth_edges.length > 0 && (
+          <p className="leading-relaxed text-[#c8cedb] mb-3">{d.trajectory?.arc}</p>
+          {growthEdges.length > 0 && (
             <p className="text-sm text-[#a8b0c0]">
-              Growth edge: {d.trajectory.growth_edges.join("; ")}
+              Growth edge: {growthEdges.join("; ")}
             </p>
           )}
         </Section>

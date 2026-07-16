@@ -84,7 +84,8 @@ const transcript = session.turns
 const anthropic = new Anthropic();
 
 console.log(`Extracting dossier from ${session.turns.length} turns...`);
-const response = await anthropic.messages.create({
+// Streaming is required by the SDK for requests that may run >10 minutes.
+const response = await anthropic.messages.stream({
   model: "claude-opus-4-8",
   max_tokens: 32000,
   thinking: { type: "adaptive" },
@@ -101,7 +102,7 @@ Hard rules:
 Return ONLY the dossier JSON, no prose. It must validate against this JSON Schema:
 ${JSON.stringify(schema)}`,
   messages: [{ role: "user", content: `Interview transcript:\n\n${transcript}` }],
-});
+}).finalMessage();
 
 const text = response.content
   .filter((b) => b.type === "text")

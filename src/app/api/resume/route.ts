@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PDFParse } from "pdf-parse";
+import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
 
 // Free-tier resume upload: parse PDF/docx to text. The text is returned to the
@@ -25,9 +25,9 @@ export async function POST(req: Request) {
   try {
     let text: string;
     if (name.endsWith(".pdf") || file.type === "application/pdf") {
-      const parser = new PDFParse({ data: new Uint8Array(buf) });
-      text = (await parser.getText()).text;
-      await parser.destroy();
+      const pdf = await getDocumentProxy(new Uint8Array(buf));
+      const extracted = await extractText(pdf, { mergePages: true });
+      text = extracted.text;
     } else if (name.endsWith(".docx")) {
       text = (await mammoth.extractRawText({ buffer: buf })).value;
     } else if (name.endsWith(".txt") || file.type.startsWith("text/")) {

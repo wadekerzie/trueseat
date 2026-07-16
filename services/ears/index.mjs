@@ -7,7 +7,7 @@ import { createServer } from "node:http";
 import { GoogleGenAI } from "@google/genai";
 
 const PORT = process.env.PORT || 8080;
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 const MAX_BODY_BYTES = 40 * 1024 * 1024; // Gemini inline limit is ~20MB media; base64 inflates by ~4/3
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

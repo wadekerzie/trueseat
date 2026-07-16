@@ -17,7 +17,7 @@ gcloud run deploy trueseat-ears \
   --project trueseat \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_MODEL=gemini-2.5-flash,EARS_SHARED_SECRET=<generate one>
+  --set-env-vars GEMINI_MODEL=gemini-3.5-flash,EARS_SHARED_SECRET=<generate one>
 ```
 
 Store `GEMINI_API_KEY` as a Cloud Run secret or env var (never in the repo). The key lives in Wade OS at `00_system/Private/Secrets/gcp_trueseat.env`.

@@ -59,7 +59,9 @@ function readBody(req) {
 const server = createServer(async (req, res) => {
   res.setHeader("content-type", "application/json");
 
-  if (req.method === "GET" && req.url === "/healthz") {
+  // /healthz is reserved by Google Front End on run.app domains (edge 404s
+  // before the container sees it), so /health is the path that works in prod.
+  if (req.method === "GET" && (req.url === "/health" || req.url === "/healthz")) {
     res.end(JSON.stringify({ ok: true, model: MODEL }));
     return;
   }

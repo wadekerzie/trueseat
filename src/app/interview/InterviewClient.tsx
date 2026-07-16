@@ -13,6 +13,17 @@ type Stage =
 
 const ACCENT = "#6B9FD4";
 
+// Mirrors PHASES in src/lib/interviewer.ts (not imported: that module pulls
+// the server-side Anthropic SDK into the client bundle).
+const PHASE_ORDER = [
+  "arc",
+  "evidence",
+  "operating_profile",
+  "constraints",
+  "adjudication",
+  "witnesses",
+];
+
 function pickMimeType(): string {
   const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
   for (const c of candidates) {
@@ -34,6 +45,7 @@ export default function InterviewClient() {
   const [showTyping, setShowTyping] = useState(false);
   const [resumeText, setResumeText] = useState<string | null>(null);
   const [resumeStatus, setResumeStatus] = useState<string | null>(null);
+  const lastPayloadRef = useRef<Record<string, string> | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
 
@@ -118,6 +130,9 @@ export default function InterviewClient() {
 
   const submitAnswer = useCallback(
     async (payload: Record<string, string>) => {
+      // Keep the payload so a network/service hiccup never costs the candidate
+      // a recorded answer — the error screen can resubmit it verbatim.
+      lastPayloadRef.current = payload;
       setStage("processing");
       try {
         const res = await fetch(`/api/interview/${sessionId}/answer`, {
@@ -127,11 +142,14 @@ export default function InterviewClient() {
         });
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
+        lastPayloadRef.current = null;
         setTranscript(data.transcript);
         setPendingNext({ question: data.question, phase: data.phase, done: data.done });
         setStage("confirm");
       } catch {
-        setErrorMsg("That answer didn't go through. Your session is saved; try again.");
+        setErrorMsg(
+          "That answer didn't go through — your recording is still here, nothing was lost."
+        );
         setStage("error");
       }
     },
@@ -179,9 +197,28 @@ export default function InterviewClient() {
   return (
     <main className="min-h-screen bg-[#0e1116] text-[#e8eaf0] flex flex-col">
       <div className="mx-auto w-full max-w-2xl px-6 py-16 flex-1 flex flex-col">
-        <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9] mb-10">
-          TrueSeat Interview{phase && stage !== "welcome" ? ` · ${phase.replace("_", " ")}` : ""}
-        </p>
+        <div className="mb-10">
+          <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9]">
+            TrueSeat Interview{phase && stage !== "welcome" ? ` · ${phase.replace("_", " ")}` : ""}
+          </p>
+          {phase && stage !== "welcome" && stage !== "done" && (
+            <div className="flex gap-1.5 mt-3" aria-label={`Phase ${PHASE_ORDER.indexOf(phase) + 1} of ${PHASE_ORDER.length}`}>
+              {PHASE_ORDER.map((p, i) => (
+                <span
+                  key={p}
+                  title={p.replace("_", " ")}
+                  className={`h-1 flex-1 max-w-12 rounded-full transition-colors ${
+                    i < PHASE_ORDER.indexOf(phase)
+                      ? "bg-[#6B9FD4]"
+                      : i === PHASE_ORDER.indexOf(phase)
+                      ? "bg-[#8ab4e0] animate-pulse"
+                      : "bg-[#2a3242]"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {stage === "welcome" && (
           <div className="my-auto">
@@ -348,13 +385,36 @@ export default function InterviewClient() {
         {stage === "error" && (
           <div className="my-auto">
             <p className="text-[#E8896A] mb-6">{errorMsg}</p>
-            <button
-              onClick={() => setStage(sessionId ? "asking" : "welcome")}
-              className="rounded-md px-5 py-2.5 font-medium text-[#0e1116]"
-              style={{ backgroundColor: ACCENT }}
-            >
-              Try again
-            </button>
+            <div className="flex gap-4 items-center">
+              {lastPayloadRef.current ? (
+                <button
+                  onClick={() => submitAnswer(lastPayloadRef.current!)}
+                  className="rounded-md px-5 py-2.5 font-medium text-[#0e1116]"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  Resend that answer
+                </button>
+              ) : (
+                <button
+                  onClick={() => setStage(sessionId ? "asking" : "welcome")}
+                  className="rounded-md px-5 py-2.5 font-medium text-[#0e1116]"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  Try again
+                </button>
+              )}
+              {lastPayloadRef.current && (
+                <button
+                  onClick={() => {
+                    lastPayloadRef.current = null;
+                    setStage(sessionId ? "asking" : "welcome");
+                  }}
+                  className="text-sm text-[#6d7585] underline underline-offset-4"
+                >
+                  Discard and re-answer
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

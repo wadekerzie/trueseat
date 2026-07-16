@@ -1,12 +1,27 @@
-// Generate a dossier from a completed interview session (dev CLI).
-// Usage: ANTHROPIC_API_KEY=... node scripts/generate-dossier.mjs <sessionId>
-// Reads .data/sessions/<id>.json, extracts with Claude against the dossier
-// schema, validates with ajv, writes .data/dossiers/<id>.json.
+// Generate a dossier from a completed interview session.
+// Usage: node scripts/generate-dossier.mjs <sessionId>
+//
+// Env is loaded from .env.local automatically (ANTHROPIC_API_KEY required).
+// With Supabase env present: reads the session from Supabase and writes the
+// dossier row there (the /d/<dossierId> URL is printed). Without it, falls
+// back to local .data/ JSON files.
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+
+// Minimal .env.local loader (no dependency): KEY=VALUE lines, no quotes.
+if (existsSync(".env.local")) {
+  for (const line of readFileSync(".env.local", "utf8").split("\n")) {
+    const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (m && !(m[1] in process.env) && m[2]) process.env[m[1]] = m[2];
+  }
+}
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
 const sessionId = process.argv[2];
 if (!sessionId) {
@@ -18,8 +33,44 @@ if (!process.env.ANTHROPIC_API_KEY) {
   process.exit(1);
 }
 
+async function rest(pathname, init = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1${pathname}`, {
+    ...init,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      ...init.headers,
+    },
+  });
+  if (!res.ok) throw new Error(`${pathname}: ${res.status} ${await res.text()}`);
+  return res;
+}
+
 const schema = JSON.parse(readFileSync("schema/dossier.schema.json", "utf8"));
-const session = JSON.parse(readFileSync(`.data/sessions/${sessionId}.json`, "utf8"));
+
+let session;
+if (useSupabase) {
+  const rows = await (await rest(`/interview_sessions?id=eq.${sessionId}&select=*&limit=1`)).json();
+  if (!rows.length) {
+    console.error(`session ${sessionId} not found in Supabase`);
+    process.exit(1);
+  }
+  const r = rows[0];
+  session = {
+    id: r.id,
+    candidateName: r.candidate_name ?? undefined,
+    phase: r.phase,
+    turns: r.turns ?? [],
+  };
+} else {
+  session = JSON.parse(readFileSync(`.data/sessions/${sessionId}.json`, "utf8"));
+}
+
+if (!session.turns.length) {
+  console.error("session has no turns; nothing to extract");
+  process.exit(1);
+}
 
 const transcript = session.turns
   .map((t) => {
@@ -64,11 +115,27 @@ const validate = ajv.compile(schema);
 if (!validate(dossier)) {
   console.error("Extraction produced invalid dossier:");
   for (const e of validate.errors ?? []) console.error(` ${e.instancePath} ${e.message}`);
+  mkdirSync(".data/dossiers", { recursive: true });
   writeFileSync(`.data/dossiers/${sessionId}.invalid.json`, JSON.stringify(dossier, null, 2));
   process.exit(1);
 }
 
-mkdirSync(".data/dossiers", { recursive: true });
-writeFileSync(`.data/dossiers/${sessionId}.json`, JSON.stringify(dossier, null, 2));
-console.log(`✓ dossier written to .data/dossiers/${sessionId}.json`);
+if (useSupabase) {
+  const res = await rest(`/dossiers`, {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      session_id: session.id,
+      content: dossier,
+      candidate_reviewed: false,
+    }),
+  });
+  const [row] = await res.json();
+  console.log(`✓ dossier ${row.id} written to Supabase (session ${session.id})`);
+  console.log(`  URL: https://trueseat.io/d/${row.id}`);
+} else {
+  mkdirSync(".data/dossiers", { recursive: true });
+  writeFileSync(`.data/dossiers/${sessionId}.json`, JSON.stringify(dossier, null, 2));
+  console.log(`✓ dossier written to .data/dossiers/${sessionId}.json`);
+}
 console.log("Next: candidate review pass — nothing ships unreviewed.");

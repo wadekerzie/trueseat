@@ -1,65 +1,39 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen w-full bg-[#0e1116] text-[#e8eaf0] flex flex-col">
+      <div className="mx-auto w-full max-w-3xl px-6 py-24 flex-1 flex flex-col justify-center">
+        <p className="text-sm tracking-[0.25em] uppercase text-[#7fa6d9] mb-6">
+          TrueSeat
+        </p>
+        <h1 className="text-4xl sm:text-5xl font-semibold leading-tight mb-6">
+          Resumes are claims.
+          <br />
+          This is evidence.
+        </h1>
+        <p className="text-lg text-[#a8b0c0] leading-relaxed mb-4 max-w-2xl">
+          TrueSeat interviews you the way a great colleague would after six
+          months of working together, then builds a sealed, evidence-backed
+          dossier of what you can actually do, how you actually operate, and
+          what you actually need. You own every word of it.
+        </p>
+        <p className="text-lg text-[#a8b0c0] leading-relaxed mb-10 max-w-2xl">
+          The right person in the right seat, proven instead of pitched.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <a
+            href="mailto:wade@kerzie.ai?subject=TrueSeat%20founding%20cohort"
+            className="rounded-md bg-[#6B9FD4] px-6 py-3 font-medium text-[#0e1116] hover:bg-[#8ab4e0] transition-colors"
+          >
+            Join the founding cohort
+          </a>
+          <p className="text-sm text-[#6d7585] py-3">
+            Launching August 2026. Built in public.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+      <footer className="mx-auto w-full max-w-3xl px-6 py-8 text-sm text-[#6d7585] border-t border-[#1c2230]">
+        TrueSeat · a Kerzie AI build · trueseat.io
+      </footer>
+    </main>
   );
 }

@@ -1,0 +1,17 @@
+{
+  "name": "trueseat-ears",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TrueSeat ears: Gemini-powered audio ingestion on Cloud Run. Voice memo in, transcript + first-pass interview summary out.",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0"
+  }
+}

@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TrueSeat
 
-## Getting Started
+**Resumes are claims. TrueSeat is evidence.**
 
-First, run the development server:
+A whole-person hiring engine: an AI interview builds each candidate a sealed, evidence-backed capability dossier (what they can actually do, how they actually operate, what they actually need), hosts an evidence page, and emits honest ATS-clean applications from it. The symmetric employer interview and blind matching follow. Built for the Build with Gemini XPRIZE (Entrepreneurship & Job Creation), created July 2026.
+
+## Architecture
+
+| Piece | What | Where |
+|---|---|---|
+| App + marketing | Next.js 15 / TypeScript / Tailwind | Vercel, trueseat.io |
+| The brain | Claude (`claude-opus-4-8`): interview orchestration, dossier extraction via structured outputs, bridge applications | `src/lib/claude.ts`, `prompts/` |
+| The ears | Gemini audio ingestion service (transcript + first-pass summary) | `services/ears/`, Google Cloud Run, GCP project `trueseat` |
+| Dossier schema | The ontology: verified claims, situated capabilities, artifacts w/ provenance, operating profile, sealed constraints, trajectory | `schema/dossier.schema.json` |
+| Auth / DB / storage | Supabase (magic links, Postgres JSONB, Storage) | week 1 |
+| Payments / email | Stripe payment links, Resend | week 0-2 |
+
+Division of labor: Claude is the brain, Gemini is the ears, deterministic code is everything else.
+
+## XPrize compliance (by architecture, not bolted on)
+
+- **Newly created in-window:** this repo's first commit is July 15, 2026.
+- **Load-bearing Gemini call:** every audio input flows through `services/ears` (Gemini `generateContent` with audio).
+- **Google Cloud product:** the ears service deploys on Cloud Run.
+- **Business viability evidence:** real Stripe receipts only. No fabricated traction, ever.
+
+## Product principles
+
+1. Evidence over claims: every substantive claim carries a verification tier (0 self-reported → 3 witness-verified) and points at artifacts.
+2. The candidate owns the dossier and reviews every word before anything ships.
+3. Constraints and operating profile are sealed by default.
+4. Operating profile is behavioral, job-relevant, plain language: no clinical labels, no proprietary instrument administration, no protected-characteristic inference.
+
+## Develop
 
 ```bash
+npm install
+cp .env.example .env.local   # fill from Wade OS Secrets
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ears service: see `services/ears/README.md`.

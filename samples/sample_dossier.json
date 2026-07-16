@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0",
+  "identity": {
+    "full_name": "Jordan Reyes",
+    "headline": "Operations leader who turns chaotic fulfillment into boring, on-time machines.",
+    "location": "Denver, CO",
+    "links": [
+      { "label": "LinkedIn", "url": "https://www.linkedin.com/in/example-jordan-reyes" }
+    ]
+  },
+  "headline_numbers": [
+    {
+      "claim": "Cut fulfillment error rate from 4.1% to 0.6% across three warehouses in 14 months",
+      "tier": 2,
+      "evidence": [{ "artifact_id": "art-qbr-2024", "note": "Q4 board deck, error-rate slide, company data" }],
+      "adjudicated": true
+    },
+    {
+      "claim": "Ran a 140-person operation across three sites with $38M annual throughput",
+      "tier": 1,
+      "evidence": [{ "artifact_id": "art-org-chart", "note": "Org chart and P&L summary as of 2024" }],
+      "adjudicated": true
+    },
+    {
+      "claim": "Kept voluntary warehouse turnover under 12% in a market averaging 30%+",
+      "tier": 3,
+      "evidence": [{ "artifact_id": "art-qbr-2024", "note": "HR dashboard excerpt" }],
+      "witnesses": ["ref-chen"],
+      "adjudicated": true
+    }
+  ],
+  "experience": [
+    {
+      "organization": "Alpine Direct (e-commerce fulfillment)",
+      "title": "VP Operations",
+      "start": "2021-03",
+      "end": "2025-11",
+      "context": "Joined 4 months after a failed WMS migration; error rates had tripled and the largest customer was threatening to leave.",
+      "outcomes": [
+        {
+          "claim": "Retained the at-risk anchor customer (31% of revenue) inside the first quarter",
+          "tier": 3,
+          "evidence": [{ "artifact_id": "art-renewal", "note": "Renewal announcement" }],
+          "witnesses": ["ref-okafor"],
+          "adjudicated": true
+        }
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "capability": "Stabilizing operations mid-crisis without losing the team",
+      "situation": "Inherited a 140-person operation in open revolt after a botched systems migration, with the anchor customer threatening exit",
+      "tier": 3,
+      "evidence": [{ "artifact_id": "art-qbr-2024" }],
+      "witnesses": ["ref-chen", "ref-okafor"]
+    },
+    {
+      "capability": "Building frontline leadership pipelines",
+      "situation": "Promoted 11 shift leads to salaried management over three years in a market where competitors poach constantly",
+      "tier": 1,
+      "evidence": [{ "artifact_id": "art-promo-list" }]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "art-qbr-2024",
+      "type": "document",
+      "title": "Q4 2024 board operations review (excerpt)",
+      "created_date": "2024-12",
+      "provenance": "Company board deck; shared with permission, customer names redacted"
+    },
+    {
+      "id": "art-org-chart",
+      "type": "document",
+      "title": "Operations org chart + P&L summary",
+      "created_date": "2024-06",
+      "provenance": "Internal document, verified against LinkedIn team roster"
+    },
+    {
+      "id": "art-renewal",
+      "type": "press",
+      "title": "Alpine Direct multi-year renewal announcement",
+      "url": "https://example.com/press/alpine-renewal",
+      "created_date": "2021-08",
+      "provenance": "Public press release naming the operations turnaround"
+    },
+    {
+      "id": "art-promo-list",
+      "type": "document",
+      "title": "Internal promotion records 2021-2024",
+      "created_date": "2024-09",
+      "provenance": "Self-provided; spot-checkable against LinkedIn profiles of the promoted leads"
+    }
+  ],
+  "operating_profile": {
+    "dimensions": [
+      {
+        "dimension": "pace_and_drive",
+        "profile": "Fast to act on operational fires, deliberately slow on structural changes. The migration recovery story shows 48-hour tactical response but a 90-day deliberate rebuild plan.",
+        "stories": [
+          {
+            "prompt": "Tell me about the last deadline that really mattered.",
+            "narrative": "The anchor customer gave us 30 days to show a plan. I had a war room running within two days, but I refused to promise fixes faster than we could actually deliver them, and told the customer exactly that.",
+            "signals": ["urgency on response, honesty on timelines", "comfortable delivering unwelcome truth to a customer"]
+          }
+        ],
+        "self_report": "Describes self as 'impatient but not reckless'",
+        "alignment": "consistent",
+        "witnesses": ["ref-okafor"]
+      },
+      {
+        "dimension": "conflict_behavior",
+        "profile": "Disagrees in private, commits in public. Pushed back on the CEO's plan to cut headcount mid-recovery; lost the argument, executed the cut, then documented the service impact and won the rehire case a quarter later.",
+        "stories": [
+          {
+            "prompt": "Last time you disagreed with your boss about something that mattered?",
+            "narrative": "I told the CEO cutting 15% of warehouse staff during the recovery would show up in error rates within six weeks. He did it anyway. I executed it cleanly, tracked the impact, and brought the data back. We rehired in Q3.",
+            "signals": ["disagree-and-commit", "uses data rather than escalation", "plays long games"]
+          }
+        ],
+        "self_report": "Says they 'don't do politics'",
+        "alignment": "partially_consistent"
+      },
+      {
+        "dimension": "autonomy_calibration",
+        "profile": "Does best work with quarterly goals and weekly written updates; chafes under daily check-ins. Best-manager story centers on being handed a failing site with full authority; worst-manager story is a daily-standup micromanager.",
+        "self_report": "Wants 'room to run'",
+        "alignment": "consistent"
+      }
+    ],
+    "manager_manual": {
+      "onboarding": "Hand them the ugliest real problem on day one, not a listening tour. They build trust by fixing something visible fast.",
+      "feedback": "Direct and private. They will argue back once; that's processing, not defiance. Decide, and they'll commit.",
+      "check_ins": "Weekly written update plus a biweekly 1:1. Daily standups read as distrust.",
+      "motivators": "Visible operational metrics improving; promoting their people.",
+      "demotivators": "Being asked to promise timelines they don't believe; decisions relitigated after commitment.",
+      "communication": "Writes first, talks second. Expect a memo before a meeting."
+    },
+    "micro_references": [
+      {
+        "id": "ref-chen",
+        "name": "M. Chen",
+        "relationship": "Former direct report, warehouse manager 2021-2024",
+        "status": "completed",
+        "confirmations": [
+          "Turnover number is real; people stayed because leads got promoted from within",
+          "Confirms weekly-written-update cadence and 'argues once, then commits' pattern"
+        ],
+        "completed_at": "2026-07-01"
+      },
+      {
+        "id": "ref-okafor",
+        "name": "D. Okafor",
+        "relationship": "Former CEO, Alpine Direct",
+        "status": "completed",
+        "confirmations": [
+          "Anchor-customer save was primarily Jordan's work",
+          "Confirms the headcount disagreement story, including being wrong about it"
+        ],
+        "completed_at": "2026-07-03"
+      }
+    ]
+  },
+  "constraints": {
+    "compensation_floor": "SEALED — released only to matched employers with candidate consent",
+    "location": "SEALED",
+    "timing": "SEALED",
+    "dealbreakers": ["SEALED"],
+    "search_status": "SEALED"
+  },
+  "trajectory": {
+    "arc": "From shift supervisor to VP by repeatedly volunteering for the sites nobody wanted. Next seat: COO of a mid-market operator where the operations ARE the product.",
+    "target_roles": ["COO", "SVP Operations"],
+    "growth_edges": ["Board-level financial narrative; strong on ops P&L, still building the investor-language muscle"],
+    "non_goals": ["Pure strategy roles with no operational ownership", "Turnarounds that are actually wind-downs"]
+  },
+  "credentials": [
+    { "name": "Lean Six Sigma Black Belt", "issuer": "ASQ", "date": "2019" }
+  ],
+  "testimonials": [
+    {
+      "quote": "Jordan is the only executive I've worked with who got more popular with the warehouse floor while cutting the error rate in half.",
+      "attribution": "D. Okafor, former CEO, Alpine Direct",
+      "artifact_id": "art-qbr-2024"
+    }
+  ],
+  "meta": {
+    "created_at": "2026-07-15T20:00:00Z",
+    "updated_at": "2026-07-15T20:00:00Z",
+    "interview_sessions": ["sample"],
+    "sealed_sections": ["constraints", "operating_profile.micro_references"],
+    "candidate_reviewed": true
+  }
+}

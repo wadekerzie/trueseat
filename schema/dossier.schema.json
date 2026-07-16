@@ -4,7 +4,7 @@
   "title": "TrueSeat Candidate Dossier",
   "description": "Whole-person capability dossier, v1. Core thesis: evidence over claims. Every substantive claim carries a verification tier and points at evidence. Generalized from the Wade OS master-resume ontology (prototype zero). The constraints layer and operating profile are sealed by default: visible to the candidate, released to a matched employer only with candidate consent.",
   "type": "object",
-  "required": ["schema_version", "identity", "capabilities", "verification_legend", "meta"],
+  "required": ["schema_version", "identity", "capabilities", "meta"],
   "$defs": {
     "verificationTier": {
       "type": "integer",

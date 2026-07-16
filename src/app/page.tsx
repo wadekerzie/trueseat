@@ -26,7 +26,15 @@ export default function Home() {
           >
             Join the founding cohort
           </a>
-          <p className="text-sm text-[#6d7585] py-3">
+          <a
+            href="/d/sample"
+            className="rounded-md border border-[#2a3242] px-6 py-3 font-medium text-[#c8cedb] hover:border-[#6B9FD4] transition-colors"
+          >
+            See a sample dossier
+          </a>
+        </div>
+        <div className="mt-6">
+          <p className="text-sm text-[#6d7585]">
             Launching August 2026. Built in public.
           </p>
         </div>

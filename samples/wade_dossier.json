@@ -1,0 +1,266 @@
+{
+  "schema_version": "1.0",
+  "identity": {
+    "full_name": "Wade Kerzie",
+    "headline": "Founder-operator. 30 years of enterprise sales, now shipping AI-native products.",
+    "location": "McKinney, TX",
+    "links": [
+      { "label": "pro.wadekerzie.com", "url": "https://pro.wadekerzie.com" },
+      { "label": "kerzie.ai", "url": "https://kerzie.ai" }
+    ]
+  },
+  "headline_numbers": [
+    {
+      "claim": "Four live products on the public internet right now — click any of them",
+      "tier": 2,
+      "evidence": [
+        { "artifact_id": "art-kerzie-ai", "note": "AI build studio" },
+        { "artifact_id": "art-gotaguy", "note": "Text-first home repair, two metros" },
+        { "artifact_id": "art-trueseat", "note": "The product rendering this page" },
+        { "artifact_id": "art-putting", "note": "Online video course" }
+      ],
+      "adjudicated": true
+    },
+    {
+      "claim": "$420M+ in career enterprise revenue across 30 years of telecom, UCaaS, and CCaaS sales",
+      "tier": 0,
+      "adjudicated": true
+    },
+    {
+      "claim": "Nine individual deals over $12M; $184M sold at Ribbon Communications at 102%+ average attainment over 12 years",
+      "tier": 0,
+      "adjudicated": true
+    },
+    {
+      "claim": "GotaGuy live in two metros: homeowners in McKinney TX and Aurora CO get repairs by text message today",
+      "tier": 2,
+      "evidence": [
+        { "artifact_id": "art-gotaguy", "note": "Both market pages are live and serving" }
+      ],
+      "adjudicated": true
+    }
+  ],
+  "experience": [
+    {
+      "organization": "Kerzie AI Solutions (AI build studio)",
+      "title": "Founder",
+      "start": "2023-01",
+      "end": null,
+      "context": "Designs, sells, and deploys AI-native products end to end: the founder is the architect, the seller, and the operator.",
+      "outcomes": [
+        {
+          "claim": "Shipped and operates GotaGuy, an SMS-native home repair service live in two metro markets",
+          "tier": 2,
+          "evidence": [{ "artifact_id": "art-gotaguy" }]
+        },
+        {
+          "claim": "Built and launched paid Meta ad campaigns for GotaGuy entirely through the Meta Marketing API",
+          "tier": 1,
+          "evidence": [{ "artifact_id": "art-meta-tracker", "note": "Campaign tracker and Meta Insights records, available on request" }]
+        },
+        {
+          "claim": "Built TrueSeat — voice interview to sealed evidence dossier — inside the 2026 Build with Gemini window",
+          "tier": 2,
+          "evidence": [{ "artifact_id": "art-trueseat", "note": "You are reading its output" }]
+        }
+      ]
+    },
+    {
+      "organization": "EXFO",
+      "title": "Director, Fiber Monitoring — Business Development",
+      "start": "2022-06",
+      "end": "2023-01",
+      "context": "Enterprise market development for telecom analytics; ran POCs with Apple and LinkedIn.",
+      "outcomes": []
+    },
+    {
+      "organization": "Calix",
+      "title": "Area Vice President, Sales",
+      "start": "2019-01",
+      "end": "2022-01",
+      "context": "Led a 12-person enterprise sales organization against a $60M annual quota in high-growth SaaS.",
+      "outcomes": [
+        {
+          "claim": "Built the operating cadence, CRM hygiene standards, sales playbooks, and coaching model from scratch",
+          "tier": 0
+        }
+      ]
+    },
+    {
+      "organization": "Ribbon Communications (formerly Sonus Networks)",
+      "title": "Senior Sales Director",
+      "start": "2007-01",
+      "end": "2019-01",
+      "context": "Enterprise voice infrastructure and unified communications to Fortune 500 and global organizations.",
+      "outcomes": [
+        {
+          "claim": "$184M sold over 12 years; nine deals exceeding $12M individually; 8x Honor's Club, 5x President's Club",
+          "tier": 0
+        }
+      ]
+    },
+    {
+      "organization": "DGI Technologies",
+      "title": "North American Sales Manager",
+      "start": "1998-01",
+      "end": "2005-01",
+      "context": "Grew annual revenue from $4M to $29M, including a $19M single transaction.",
+      "outcomes": [
+        {
+          "claim": "Averaged 140% of quota; 1998 Salesperson of the Year",
+          "tier": 0
+        }
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "capability": "Selling and shipping simultaneously",
+      "situation": "Runs a complete founder-led motion — outbound, discovery, scoping, proposal, close — while personally building and deploying the products being sold. The evidence wall below is the output.",
+      "tier": 2,
+      "evidence": [
+        { "artifact_id": "art-kerzie-ai" },
+        { "artifact_id": "art-gotaguy" },
+        { "artifact_id": "art-trueseat" }
+      ]
+    },
+    {
+      "capability": "Translating deep technology into executive outcomes",
+      "situation": "Thirty years of explaining complex infrastructure — voice networks then, LLM orchestration and speech pipelines now — to non-technical buyers with budget authority.",
+      "tier": 1,
+      "evidence": [
+        { "artifact_id": "art-aitw", "note": "Does this in public, on the record, weekly" }
+      ]
+    },
+    {
+      "capability": "Building enterprise sales infrastructure from zero",
+      "situation": "At Calix: hired against a $60M quota and built the playbooks, CRM standards, and coaching cadence a 12-person org ran on.",
+      "tier": 0
+    },
+    {
+      "capability": "Teaching in public",
+      "situation": "Hosts AI in the Wild (podcast, and a weekly on-camera YouTube practice) and writes a weekly newsletter — a public, timestamped record of what he actually knows.",
+      "tier": 2,
+      "evidence": [
+        { "artifact_id": "art-aitw" },
+        { "artifact_id": "art-newsletter" }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "art-trueseat",
+      "type": "live_product",
+      "title": "TrueSeat",
+      "url": "https://trueseat.io",
+      "created_date": "2026-07",
+      "provenance": "The product rendering this dossier. Voice interview → evidence-tiered dossier. You are looking at the proof."
+    },
+    {
+      "id": "art-gotaguy",
+      "type": "live_product",
+      "title": "GotaGuy — home repair by text",
+      "url": "https://gotaguy.chat",
+      "created_date": "2026-06",
+      "provenance": "Live in McKinney TX and Aurora CO. Real homeowners, real contractors, real jobs paid through Stripe."
+    },
+    {
+      "id": "art-kerzie-ai",
+      "type": "live_product",
+      "title": "Kerzie AI Solutions",
+      "url": "https://kerzie.ai",
+      "created_date": "2023-01",
+      "provenance": "The studio site: services, ventures ledger, and the products that came out of it."
+    },
+    {
+      "id": "art-putting",
+      "type": "live_product",
+      "title": "PuttingIsSimple",
+      "url": "https://puttingissimple.com",
+      "created_date": "2022-01",
+      "provenance": "Online putting course, built and sold by a Division I scholarship golfer."
+    },
+    {
+      "id": "art-aitw",
+      "type": "media",
+      "title": "AI in the Wild — hosted by Wade Kerzie",
+      "url": "https://podcasts.apple.com/us/podcast/ai-in-the-wild-hosted-by-wade-kerzie/id1669058317",
+      "created_date": "2023-02",
+      "provenance": "Public podcast feed under his own byline; authorship independently checkable."
+    },
+    {
+      "id": "art-newsletter",
+      "type": "media",
+      "title": "The weekly newsletter",
+      "url": "https://wades-newsletter-9cf259.beehiiv.com/",
+      "created_date": "2025-01",
+      "provenance": "Weekly writing on AI, operations, and building — a public archive."
+    },
+    {
+      "id": "art-meta-tracker",
+      "type": "document",
+      "title": "GotaGuy Meta campaign records",
+      "created_date": "2026-07",
+      "provenance": "Internal campaign tracker backed by Meta Insights API data; shareable with a matched party on request."
+    }
+  ],
+  "operating_profile": {
+    "dimensions": [
+      {
+        "dimension": "pace_and_drive",
+        "profile": "Ships daily and in public. In one July 2026 week: redesigned the studio site, launched paid campaigns in two markets through the Meta Marketing API, and stood up TrueSeat's voice interview flow. The receipts above are timestamped.",
+        "alignment": "consistent"
+      },
+      {
+        "dimension": "customer_zero_discipline",
+        "profile": "Uses everything he builds on himself before selling it. His own resume system produced the master document behind this dossier; this dossier is the product's first real output.",
+        "alignment": "consistent"
+      },
+      {
+        "dimension": "autonomy_calibration",
+        "profile": "Operator by default: give him the outcome and the constraint, not the task list. Thirty years of quota-carrying selects for exactly this.",
+        "alignment": "consistent"
+      }
+    ],
+    "manager_manual": {
+      "communication": "Direct, verbal-first. He thinks out loud, decides fast, and expects the same candor back.",
+      "working_with_him": "Bring him the efficient route and the honest number. He has no patience for process theater and unlimited patience for real problems.",
+      "motivators": "Shipping. A scoreboard that moves. Building things his customers actually use.",
+      "demotivators": "Meetings that could have been a text. Vanity metrics."
+    },
+    "micro_references": []
+  },
+  "constraints": {
+    "compensation_floor": "SEALED",
+    "location": "SEALED",
+    "timing": "SEALED",
+    "dealbreakers": ["SEALED"],
+    "search_status": "SEALED"
+  },
+  "trajectory": {
+    "arc": "From carrying a bag for Fortune 500 telecom to building the company he wanted to work for. Current seat: founder of an AI build studio, with TrueSeat as the wedge — replacing the resume with sealed, evidence-first capability dossiers like this one.",
+    "growth_edges": ["Scaling founder-led products past customer zero without losing the shipping pace"]
+  },
+  "credentials": [
+    { "name": "Applied AI Competency Index: 98/100, Verified Architect", "issuer": "AACI", "date": "2026" },
+    { "name": "Zapier Silver Solution Partner", "issuer": "Zapier", "date": "2025" },
+    { "name": "B.S. Business Finance; Division I Scholarship Athlete (Golf)", "issuer": "University of Akron", "date": "" }
+  ],
+  "testimonials": [
+    {
+      "quote": "Wade, you are a true professional at what you do.",
+      "attribution": "Todd Abbott, VP Sales, Sonus Networks"
+    },
+    {
+      "quote": "Wade's dedication to strategic account success has yielded top-tier results and helped us grow our business.",
+      "attribution": "Anthony Christie, CTO, Global Crossing"
+    }
+  ],
+  "meta": {
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-17T00:00:00Z",
+    "interview_sessions": [],
+    "sealed_sections": ["constraints"],
+    "candidate_reviewed": false
+  }
+}

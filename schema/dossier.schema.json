@@ -4,83 +4,191 @@
   "title": "TrueSeat Candidate Dossier",
   "description": "Whole-person capability dossier, v1. Core thesis: evidence over claims. Every substantive claim carries a verification tier and points at evidence. Generalized from the Wade OS master-resume ontology (prototype zero). The constraints layer and operating profile are sealed by default: visible to the candidate, released to a matched employer only with candidate consent.",
   "type": "object",
-  "required": ["schema_version", "identity", "capabilities", "meta"],
+  "required": [
+    "schema_version",
+    "identity",
+    "capabilities",
+    "meta"
+  ],
   "$defs": {
     "verificationTier": {
       "type": "integer",
-      "enum": [0, 1, 2, 3],
+      "enum": [
+        0,
+        1,
+        2,
+        3
+      ],
       "description": "0 = self-reported (interview only). 1 = artifact-backed (a work product exists and is attached). 2 = provenance-verified (artifact's origin/date/authorship independently checkable: public URL, git history, filing, press). 3 = witness-verified (a named third party confirmed it via micro-reference interview)."
     },
     "evidenceRef": {
       "type": "object",
-      "required": ["artifact_id"],
+      "required": [
+        "artifact_id"
+      ],
       "properties": {
-        "artifact_id": { "type": "string", "description": "ID of an entry in artifacts[]" },
-        "note": { "type": "string", "description": "How this artifact supports the claim" }
+        "artifact_id": {
+          "type": "string",
+          "description": "ID of an entry in artifacts[]"
+        },
+        "note": {
+          "type": "string",
+          "description": "How this artifact supports the claim"
+        }
       }
     },
     "verifiedClaim": {
       "type": "object",
-      "required": ["claim", "tier"],
+      "required": [
+        "claim",
+        "tier"
+      ],
       "properties": {
-        "claim": { "type": "string" },
-        "tier": { "$ref": "#/$defs/verificationTier" },
-        "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidenceRef" } },
-        "witnesses": { "type": "array", "items": { "type": "string" }, "description": "micro_reference ids that confirmed this claim (required for tier 3)" },
-        "adjudicated": { "type": "boolean", "description": "Candidate explicitly confirmed the precise figure/wording in interview (e.g. a headline number they will stand behind in any room)" }
+        "claim": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/verificationTier"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        },
+        "witnesses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "micro_reference ids that confirmed this claim (required for tier 3)"
+        },
+        "adjudicated": {
+          "type": "boolean",
+          "description": "Candidate explicitly confirmed the precise figure/wording in interview (e.g. a headline number they will stand behind in any room)"
+        }
       }
     },
     "story": {
       "type": "object",
-      "required": ["prompt", "narrative"],
+      "required": [
+        "prompt",
+        "narrative"
+      ],
       "properties": {
-        "prompt": { "type": "string", "description": "The interview question that elicited this story" },
-        "narrative": { "type": "string", "description": "The story as told, condensed but in the candidate's own framing" },
-        "signals": { "type": "array", "items": { "type": "string" }, "description": "Behavioral signals the extraction pass inferred from this story" }
+        "prompt": {
+          "type": "string",
+          "description": "The interview question that elicited this story"
+        },
+        "narrative": {
+          "type": "string",
+          "description": "The story as told, condensed but in the candidate's own framing"
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Behavioral signals the extraction pass inferred from this story"
+        }
       }
     }
   },
   "properties": {
-    "schema_version": { "type": "string", "const": "1.0" },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
     "identity": {
       "type": "object",
-      "required": ["full_name", "headline"],
+      "required": [
+        "full_name",
+        "headline"
+      ],
       "properties": {
-        "full_name": { "type": "string" },
-        "headline": { "type": "string", "description": "One line, in the candidate's voice, stating what they actually do" },
-        "location": { "type": "string" },
-        "pronouns": { "type": "string" },
+        "full_name": {
+          "type": "string"
+        },
+        "headline": {
+          "type": "string",
+          "description": "One line, in the candidate's voice, stating what they actually do"
+        },
+        "location": {
+          "type": "string"
+        },
+        "pronouns": {
+          "type": "string"
+        },
         "links": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["label", "url"],
+            "required": [
+              "label",
+              "url"
+            ],
             "properties": {
-              "label": { "type": "string" },
-              "url": { "type": "string", "format": "uri" }
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
             }
           }
         },
-        "hosted_profile_url": { "type": "string", "format": "uri", "description": "The TrueSeat hosted evidence page, if purchased" }
+        "hosted_profile_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The TrueSeat hosted evidence page, if purchased"
+        }
       }
     },
     "headline_numbers": {
       "type": "array",
       "description": "The 3-6 quantified career outcomes the candidate stands behind. Each must be adjudicated in interview; never inferred or rounded up by the AI.",
-      "items": { "$ref": "#/$defs/verifiedClaim" }
+      "items": {
+        "$ref": "#/$defs/verifiedClaim"
+      }
     },
     "experience": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["organization", "title", "start"],
+        "required": [
+          "organization",
+          "title",
+          "start"
+        ],
         "properties": {
-          "organization": { "type": "string" },
-          "title": { "type": "string" },
-          "start": { "type": "string", "description": "YYYY-MM" },
-          "end": { "type": "string", "description": "YYYY-MM, absent = current" },
-          "context": { "type": "string", "description": "What the org/market situation actually was; the situation that makes the outcomes legible" },
-          "outcomes": { "type": "array", "items": { "$ref": "#/$defs/verifiedClaim" } }
+          "organization": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "YYYY-MM"
+          },
+          "end": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "End date; null means current/ongoing"
+          },
+          "context": {
+            "type": "string",
+            "description": "What the org/market situation actually was; the situation that makes the outcomes legible"
+          },
+          "outcomes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/verifiedClaim"
+            }
+          }
         }
       }
     },
@@ -89,13 +197,35 @@
       "description": "Situated capabilities: never a bare skill word. Each capability is bound to the situation it was demonstrated in and the evidence that shows it.",
       "items": {
         "type": "object",
-        "required": ["capability", "situation", "tier"],
+        "required": [
+          "capability",
+          "situation",
+          "tier"
+        ],
         "properties": {
-          "capability": { "type": "string", "description": "What the person can do, stated as an ability, not a keyword" },
-          "situation": { "type": "string", "description": "The concrete conditions under which it was demonstrated (scale, stakes, constraints)" },
-          "tier": { "$ref": "#/$defs/verificationTier" },
-          "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidenceRef" } },
-          "witnesses": { "type": "array", "items": { "type": "string" } }
+          "capability": {
+            "type": "string",
+            "description": "What the person can do, stated as an ability, not a keyword"
+          },
+          "situation": {
+            "type": "string",
+            "description": "The concrete conditions under which it was demonstrated (scale, stakes, constraints)"
+          },
+          "tier": {
+            "$ref": "#/$defs/verificationTier"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/evidenceRef"
+            }
+          },
+          "witnesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -104,16 +234,53 @@
       "description": "The evidence store: work products, writings, filings, recordings, results. Everything else in the dossier points into this list.",
       "items": {
         "type": "object",
-        "required": ["id", "type", "title", "provenance"],
+        "required": [
+          "id",
+          "type",
+          "title",
+          "provenance"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "type": { "type": "string", "enum": ["writing", "document", "url", "repository", "recording", "dataset", "press", "credential", "assessment_result", "other"] },
-          "title": { "type": "string" },
-          "url": { "type": "string", "format": "uri" },
-          "storage_path": { "type": "string", "description": "Supabase Storage path for uploaded artifacts" },
-          "created_date": { "type": "string" },
-          "provenance": { "type": "string", "description": "How we know this artifact is what it claims to be, who authored it, and when" },
-          "notes": { "type": "string" }
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "live_product",
+              "writing",
+              "document",
+              "url",
+              "repository",
+              "recording",
+              "dataset",
+              "press",
+              "credential",
+              "assessment_result",
+              "other"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "storage_path": {
+            "type": "string",
+            "description": "Supabase Storage path for uploaded artifacts"
+          },
+          "created_date": {
+            "type": "string"
+          },
+          "provenance": {
+            "type": "string",
+            "description": "How we know this artifact is what it claims to be, who authored it, and when"
+          },
+          "notes": {
+            "type": "string"
+          }
         }
       }
     },
@@ -125,17 +292,54 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["dimension", "profile"],
+            "required": [
+              "dimension",
+              "profile"
+            ],
             "properties": {
               "dimension": {
                 "type": "string",
-                "enum": ["pace_and_drive", "ramp_style", "communication_cadence", "conflict_behavior", "feedback_response", "decision_style", "energy_map", "autonomy_calibration", "under_pressure"]
+                "enum": [
+                  "pace_and_drive",
+                  "ramp_style",
+                  "communication_cadence",
+                  "conflict_behavior",
+                  "feedback_response",
+                  "decision_style",
+                  "energy_map",
+                  "autonomy_calibration",
+                  "under_pressure"
+                ]
               },
-              "profile": { "type": "string", "description": "Plain behavioral language, evidence-derived" },
-              "stories": { "type": "array", "items": { "$ref": "#/$defs/story" } },
-              "self_report": { "type": "string", "description": "How the candidate described themselves on this dimension" },
-              "alignment": { "type": "string", "enum": ["consistent", "partially_consistent", "divergent"], "description": "Whether the story evidence matches the self-report; divergence is flagged, not hidden" },
-              "witnesses": { "type": "array", "items": { "type": "string" } }
+              "profile": {
+                "type": "string",
+                "description": "Plain behavioral language, evidence-derived"
+              },
+              "stories": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/story"
+                }
+              },
+              "self_report": {
+                "type": "string",
+                "description": "How the candidate described themselves on this dimension"
+              },
+              "alignment": {
+                "type": "string",
+                "enum": [
+                  "consistent",
+                  "partially_consistent",
+                  "divergent"
+                ],
+                "description": "Whether the story evidence matches the self-report; divergence is flagged, not hidden"
+              },
+              "witnesses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         },
@@ -143,12 +347,28 @@
           "type": "object",
           "description": "The 'how to work with me' doc great teams write six months in, generated at ingest. Candidate-editable, first page a matched employer reads.",
           "properties": {
-            "onboarding": { "type": "string", "description": "What to hand this person on day one and how they ramp" },
-            "feedback": { "type": "string", "description": "How to give this person feedback so it lands" },
-            "check_ins": { "type": "string", "description": "Cadence and format of oversight this person does best work under" },
-            "motivators": { "type": "string" },
-            "demotivators": { "type": "string" },
-            "communication": { "type": "string", "description": "Channels, cadence, async vs sync" }
+            "onboarding": {
+              "type": "string",
+              "description": "What to hand this person on day one and how they ramp"
+            },
+            "feedback": {
+              "type": "string",
+              "description": "How to give this person feedback so it lands"
+            },
+            "check_ins": {
+              "type": "string",
+              "description": "Cadence and format of oversight this person does best work under"
+            },
+            "motivators": {
+              "type": "string"
+            },
+            "demotivators": {
+              "type": "string"
+            },
+            "communication": {
+              "type": "string",
+              "description": "Channels, cadence, async vs sync"
+            }
           }
         },
         "micro_references": {
@@ -156,14 +376,40 @@
           "description": "5-minute AI interviews of former colleagues, the tier-3 evidence class for operating traits.",
           "items": {
             "type": "object",
-            "required": ["id", "relationship", "status"],
+            "required": [
+              "id",
+              "relationship",
+              "status"
+            ],
             "properties": {
-              "id": { "type": "string" },
-              "name": { "type": "string" },
-              "relationship": { "type": "string", "description": "e.g. former direct manager 2019-2022, former peer, former report" },
-              "status": { "type": "string", "enum": ["invited", "completed", "declined"] },
-              "confirmations": { "type": "array", "items": { "type": "string" }, "description": "Which claims/dimensions this reference confirmed, in their words" },
-              "completed_at": { "type": "string" }
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "relationship": {
+                "type": "string",
+                "description": "e.g. former direct manager 2019-2022, former peer, former report"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "invited",
+                  "completed",
+                  "declined"
+                ]
+              },
+              "confirmations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Which claims/dimensions this reference confirmed, in their words"
+              },
+              "completed_at": {
+                "type": "string"
+              }
             }
           }
         }
@@ -173,35 +419,85 @@
       "type": "object",
       "description": "SEALED. The honest layer that makes blind matching work: shared with a matched employer only on explicit candidate release, never on hosted pages or in demos.",
       "properties": {
-        "compensation_floor": { "type": "string" },
-        "location": { "type": "string", "description": "Geography + remote/hybrid/onsite reality" },
-        "work_authorization": { "type": "string" },
-        "timing": { "type": "string", "description": "When they can actually start; notice period" },
-        "dealbreakers": { "type": "array", "items": { "type": "string" } },
-        "search_status": { "type": "string", "description": "e.g. employed and discreet, active, exploring" },
-        "notes": { "type": "string" }
+        "compensation_floor": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string",
+          "description": "Geography + remote/hybrid/onsite reality"
+        },
+        "work_authorization": {
+          "type": "string"
+        },
+        "timing": {
+          "type": "string",
+          "description": "When they can actually start; notice period"
+        },
+        "dealbreakers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "search_status": {
+          "type": "string",
+          "description": "e.g. employed and discreet, active, exploring"
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "trajectory": {
       "type": "object",
       "description": "Where this person is headed, so matching aims at the next seat, not the last one.",
       "properties": {
-        "arc": { "type": "string", "description": "The career story as a direction, in the candidate's framing" },
-        "target_roles": { "type": "array", "items": { "type": "string" } },
-        "growth_edges": { "type": "array", "items": { "type": "string" }, "description": "What they are actively getting better at; honest, not weakness-theater" },
-        "non_goals": { "type": "array", "items": { "type": "string" }, "description": "Seats they are explicitly not seeking" }
+        "arc": {
+          "type": "string",
+          "description": "The career story as a direction, in the candidate's framing"
+        },
+        "target_roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "growth_edges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What they are actively getting better at; honest, not weakness-theater"
+        },
+        "non_goals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Seats they are explicitly not seeking"
+        }
       }
     },
     "credentials": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "issuer": { "type": "string" },
-          "date": { "type": "string" },
-          "artifact_id": { "type": "string" }
+          "name": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "artifact_id": {
+            "type": "string"
+          }
         }
       }
     },
@@ -209,28 +505,60 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["quote", "attribution"],
+        "required": [
+          "quote",
+          "attribution"
+        ],
         "properties": {
-          "quote": { "type": "string" },
-          "attribution": { "type": "string" },
-          "artifact_id": { "type": "string", "description": "Provenance for the quote where available" }
+          "quote": {
+            "type": "string"
+          },
+          "attribution": {
+            "type": "string"
+          },
+          "artifact_id": {
+            "type": "string",
+            "description": "Provenance for the quote where available"
+          }
         }
       }
     },
     "meta": {
       "type": "object",
-      "required": ["created_at", "updated_at"],
+      "required": [
+        "created_at",
+        "updated_at"
+      ],
       "properties": {
-        "created_at": { "type": "string", "format": "date-time" },
-        "updated_at": { "type": "string", "format": "date-time" },
-        "interview_sessions": { "type": "array", "items": { "type": "string" } },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "interview_sessions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "sealed_sections": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["constraints", "operating_profile"],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "constraints",
+            "operating_profile"
+          ],
           "description": "Sections withheld from hosted pages and unmatched parties"
         },
-        "candidate_reviewed": { "type": "boolean", "description": "Candidate has read and approved every word; nothing ships unreviewed" }
+        "candidate_reviewed": {
+          "type": "boolean",
+          "description": "Candidate has read and approved every word; nothing ships unreviewed"
+        }
       }
     }
   }

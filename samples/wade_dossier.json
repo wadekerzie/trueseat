@@ -5,19 +5,37 @@
     "headline": "Founder-operator. 30 years of enterprise sales, now shipping AI-native products.",
     "location": "McKinney, TX",
     "links": [
-      { "label": "pro.wadekerzie.com", "url": "https://pro.wadekerzie.com" },
-      { "label": "kerzie.ai", "url": "https://kerzie.ai" }
+      {
+        "label": "pro.wadekerzie.com",
+        "url": "https://pro.wadekerzie.com"
+      },
+      {
+        "label": "kerzie.ai",
+        "url": "https://kerzie.ai"
+      }
     ]
   },
   "headline_numbers": [
     {
-      "claim": "Four live products on the public internet right now — click any of them",
+      "claim": "Four live products on the public internet right now \u2014 click any of them",
       "tier": 2,
       "evidence": [
-        { "artifact_id": "art-kerzie-ai", "note": "AI build studio" },
-        { "artifact_id": "art-gotaguy", "note": "Text-first home repair, two metros" },
-        { "artifact_id": "art-trueseat", "note": "The product rendering this page" },
-        { "artifact_id": "art-putting", "note": "Online video course" }
+        {
+          "artifact_id": "art-kerzie-ai",
+          "note": "AI build studio"
+        },
+        {
+          "artifact_id": "art-gotaguy",
+          "note": "Text-first home repair, two metros"
+        },
+        {
+          "artifact_id": "art-trueseat",
+          "note": "The product rendering this page"
+        },
+        {
+          "artifact_id": "art-putting",
+          "note": "Online video course"
+        }
       ],
       "adjudicated": true
     },
@@ -35,7 +53,10 @@
       "claim": "GotaGuy live in two metros: homeowners in McKinney TX and Aurora CO get repairs by text message today",
       "tier": 2,
       "evidence": [
-        { "artifact_id": "art-gotaguy", "note": "Both market pages are live and serving" }
+        {
+          "artifact_id": "art-gotaguy",
+          "note": "Both market pages are live and serving"
+        }
       ],
       "adjudicated": true
     }
@@ -51,23 +72,37 @@
         {
           "claim": "Shipped and operates GotaGuy, an SMS-native home repair service live in two metro markets",
           "tier": 2,
-          "evidence": [{ "artifact_id": "art-gotaguy" }]
+          "evidence": [
+            {
+              "artifact_id": "art-gotaguy"
+            }
+          ]
         },
         {
           "claim": "Built and launched paid Meta ad campaigns for GotaGuy entirely through the Meta Marketing API",
           "tier": 1,
-          "evidence": [{ "artifact_id": "art-meta-tracker", "note": "Campaign tracker and Meta Insights records, available on request" }]
+          "evidence": [
+            {
+              "artifact_id": "art-meta-tracker",
+              "note": "Campaign tracker and Meta Insights records, available on request"
+            }
+          ]
         },
         {
-          "claim": "Built TrueSeat — voice interview to sealed evidence dossier — inside the 2026 Build with Gemini window",
+          "claim": "Built TrueSeat \u2014 voice interview to sealed evidence dossier \u2014 inside the 2026 Build with Gemini window",
           "tier": 2,
-          "evidence": [{ "artifact_id": "art-trueseat", "note": "You are reading its output" }]
+          "evidence": [
+            {
+              "artifact_id": "art-trueseat",
+              "note": "You are reading its output"
+            }
+          ]
         }
       ]
     },
     {
       "organization": "EXFO",
-      "title": "Director, Fiber Monitoring — Business Development",
+      "title": "Director, Fiber Monitoring \u2014 Business Development",
       "start": "2022-06",
       "end": "2023-01",
       "context": "Enterprise market development for telecom analytics; ran POCs with Apple and LinkedIn.",
@@ -116,20 +151,29 @@
   "capabilities": [
     {
       "capability": "Selling and shipping simultaneously",
-      "situation": "Runs a complete founder-led motion — outbound, discovery, scoping, proposal, close — while personally building and deploying the products being sold. The evidence wall below is the output.",
+      "situation": "Runs a complete founder-led motion \u2014 outbound, discovery, scoping, proposal, close \u2014 while personally building and deploying the products being sold. The evidence wall below is the output.",
       "tier": 2,
       "evidence": [
-        { "artifact_id": "art-kerzie-ai" },
-        { "artifact_id": "art-gotaguy" },
-        { "artifact_id": "art-trueseat" }
+        {
+          "artifact_id": "art-kerzie-ai"
+        },
+        {
+          "artifact_id": "art-gotaguy"
+        },
+        {
+          "artifact_id": "art-trueseat"
+        }
       ]
     },
     {
       "capability": "Translating deep technology into executive outcomes",
-      "situation": "Thirty years of explaining complex infrastructure — voice networks then, LLM orchestration and speech pipelines now — to non-technical buyers with budget authority.",
+      "situation": "Thirty years of explaining complex infrastructure \u2014 voice networks then, LLM orchestration and speech pipelines now \u2014 to non-technical buyers with budget authority.",
       "tier": 1,
       "evidence": [
-        { "artifact_id": "art-aitw", "note": "Does this in public, on the record, weekly" }
+        {
+          "artifact_id": "art-aitw",
+          "note": "Does this in public, on the record, weekly"
+        }
       ]
     },
     {
@@ -139,11 +183,26 @@
     },
     {
       "capability": "Teaching in public",
-      "situation": "Hosts AI in the Wild (podcast, and a weekly on-camera YouTube practice) and writes a weekly newsletter — a public, timestamped record of what he actually knows.",
+      "situation": "Hosts AI in the Wild (podcast, and a weekly on-camera YouTube practice) and writes a weekly newsletter \u2014 a public, timestamped record of what he actually knows.",
       "tier": 2,
       "evidence": [
-        { "artifact_id": "art-aitw" },
-        { "artifact_id": "art-newsletter" }
+        {
+          "artifact_id": "art-aitw"
+        },
+        {
+          "artifact_id": "art-newsletter"
+        }
+      ]
+    },
+    {
+      "capability": "Customer-zero discipline: uses everything he builds on himself before selling it",
+      "situation": "Uses everything he builds on himself before selling it. His own resume system produced the master document behind this dossier; this dossier is the product's first real output.",
+      "tier": 2,
+      "evidence": [
+        {
+          "artifact_id": "art-trueseat",
+          "note": "This dossier is the product's own output"
+        }
       ]
     }
   ],
@@ -154,12 +213,12 @@
       "title": "TrueSeat",
       "url": "https://trueseat.io",
       "created_date": "2026-07",
-      "provenance": "The product rendering this dossier. Voice interview → evidence-tiered dossier. You are looking at the proof."
+      "provenance": "The product rendering this dossier. Voice interview \u2192 evidence-tiered dossier. You are looking at the proof."
     },
     {
       "id": "art-gotaguy",
       "type": "live_product",
-      "title": "GotaGuy — home repair by text",
+      "title": "GotaGuy \u2014 home repair by text",
       "url": "https://gotaguy.chat",
       "created_date": "2026-06",
       "provenance": "Live in McKinney TX and Aurora CO. Real homeowners, real contractors, real jobs paid through Stripe."
@@ -182,19 +241,19 @@
     },
     {
       "id": "art-aitw",
-      "type": "media",
-      "title": "AI in the Wild — hosted by Wade Kerzie",
+      "type": "recording",
+      "title": "AI in the Wild \u2014 hosted by Wade Kerzie",
       "url": "https://podcasts.apple.com/us/podcast/ai-in-the-wild-hosted-by-wade-kerzie/id1669058317",
       "created_date": "2023-02",
       "provenance": "Public podcast feed under his own byline; authorship independently checkable."
     },
     {
       "id": "art-newsletter",
-      "type": "media",
+      "type": "writing",
       "title": "The weekly newsletter",
       "url": "https://wades-newsletter-9cf259.beehiiv.com/",
       "created_date": "2025-01",
-      "provenance": "Weekly writing on AI, operations, and building — a public archive."
+      "provenance": "Weekly writing on AI, operations, and building \u2014 a public archive."
     },
     {
       "id": "art-meta-tracker",
@@ -209,11 +268,6 @@
       {
         "dimension": "pace_and_drive",
         "profile": "Ships daily and in public. In one July 2026 week: redesigned the studio site, launched paid campaigns in two markets through the Meta Marketing API, and stood up TrueSeat's voice interview flow. The receipts above are timestamped.",
-        "alignment": "consistent"
-      },
-      {
-        "dimension": "customer_zero_discipline",
-        "profile": "Uses everything he builds on himself before selling it. His own resume system produced the master document behind this dossier; this dossier is the product's first real output.",
         "alignment": "consistent"
       },
       {
@@ -234,17 +288,33 @@
     "compensation_floor": "SEALED",
     "location": "SEALED",
     "timing": "SEALED",
-    "dealbreakers": ["SEALED"],
+    "dealbreakers": [
+      "SEALED"
+    ],
     "search_status": "SEALED"
   },
   "trajectory": {
-    "arc": "From carrying a bag for Fortune 500 telecom to building the company he wanted to work for. Current seat: founder of an AI build studio, with TrueSeat as the wedge — replacing the resume with sealed, evidence-first capability dossiers like this one.",
-    "growth_edges": ["Scaling founder-led products past customer zero without losing the shipping pace"]
+    "arc": "From carrying a bag for Fortune 500 telecom to building the company he wanted to work for. Current seat: founder of an AI build studio, with TrueSeat as the wedge \u2014 replacing the resume with sealed, evidence-first capability dossiers like this one.",
+    "growth_edges": [
+      "Scaling founder-led products past customer zero without losing the shipping pace"
+    ]
   },
   "credentials": [
-    { "name": "Applied AI Competency Index: 98/100, Verified Architect", "issuer": "AACI", "date": "2026" },
-    { "name": "Zapier Silver Solution Partner", "issuer": "Zapier", "date": "2025" },
-    { "name": "B.S. Business Finance; Division I Scholarship Athlete (Golf)", "issuer": "University of Akron", "date": "" }
+    {
+      "name": "Applied AI Competency Index: 98/100, Verified Architect",
+      "issuer": "AACI",
+      "date": "2026"
+    },
+    {
+      "name": "Zapier Silver Solution Partner",
+      "issuer": "Zapier",
+      "date": "2025"
+    },
+    {
+      "name": "B.S. Business Finance; Division I Scholarship Athlete (Golf)",
+      "issuer": "University of Akron",
+      "date": ""
+    }
   ],
   "testimonials": [
     {
@@ -260,7 +330,9 @@
     "created_at": "2026-07-17T00:00:00Z",
     "updated_at": "2026-07-17T00:00:00Z",
     "interview_sessions": [],
-    "sealed_sections": ["constraints"],
+    "sealed_sections": [
+      "constraints"
+    ],
     "candidate_reviewed": false
   }
 }

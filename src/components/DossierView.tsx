@@ -9,9 +9,24 @@ interface Evidence {
 
 interface Artifact {
   id: string;
-  type: "live_product" | "media" | "document" | "repo" | "press";
+  // Schema enum plus the legacy types the original sample used.
+  type:
+    | "writing"
+    | "document"
+    | "url"
+    | "repository"
+    | "recording"
+    | "dataset"
+    | "press"
+    | "credential"
+    | "assessment_result"
+    | "other"
+    | "live_product"
+    | "media"
+    | "repo";
   title: string;
   url?: string;
+  storage_path?: string;
   created_date?: string;
   provenance?: string;
 }
@@ -69,11 +84,19 @@ const TIER_LABELS: Record<number, { label: string; hint: string }> = {
 };
 
 const ARTIFACT_TYPE_LABELS: Record<Artifact["type"], string> = {
+  writing: "Writing",
+  document: "Document",
+  url: "Link",
+  repository: "Repository",
+  recording: "Recording",
+  dataset: "Dataset",
+  press: "Press",
+  credential: "Credential",
+  assessment_result: "Assessment result",
+  other: "Artifact",
   live_product: "Live product",
   media: "Public media",
-  document: "Document",
   repo: "Repository",
-  press: "Press",
 };
 
 function Tier({ tier }: { tier: number }) {

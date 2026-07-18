@@ -82,6 +82,47 @@ const transcript = session.turns
   })
   .join("\n\n");
 
+// X18 Phase 1: candidate-provided evidence links from the post-interview
+// evidence screen. Stored as events (kind evidence_claims / evidence_submitted,
+// latest row wins); dev fallback reads the .data/evidence/ files.
+async function latestEventData(kind) {
+  const rows = await (
+    await rest(
+      `/events?kind=eq.${kind}&session_id=eq.${sessionId}&order=at.desc,id.desc&limit=1&select=data`
+    )
+  ).json();
+  return rows.length ? rows[0].data : null;
+}
+
+let evidenceBlock = "";
+try {
+  const [claimsData, itemsData] = useSupabase
+    ? await Promise.all([
+        latestEventData("evidence_claims"),
+        latestEventData("evidence_submitted"),
+      ])
+    : [
+        existsSync(`.data/evidence/${sessionId}.claims.json`)
+          ? JSON.parse(readFileSync(`.data/evidence/${sessionId}.claims.json`, "utf8"))
+          : null,
+        existsSync(`.data/evidence/${sessionId}.items.json`)
+          ? JSON.parse(readFileSync(`.data/evidence/${sessionId}.items.json`, "utf8"))
+          : null,
+      ];
+  const evClaims = claimsData?.claims ?? [];
+  const evItems = itemsData?.items ?? [];
+  if (evItems.length) {
+    const lines = evItems.map((it) => {
+      const claim = evClaims.find((c) => c.id === it.claim_id);
+      return `- Claim: ${claim ? claim.claim : it.claim_id}\n  Link: ${it.url}${it.note ? `\n  Candidate note: ${it.note}` : ""}`;
+    });
+    evidenceBlock = `\n\nCandidate-provided evidence links (pasted by the candidate on the post-interview evidence screen to back specific claims):\n${lines.join("\n")}\n`;
+    console.log(`Including ${evItems.length} candidate evidence link(s).`);
+  }
+} catch (err) {
+  console.error("evidence lookup failed (continuing without):", err.message);
+}
+
 const anthropic = new Anthropic();
 
 console.log(`Extracting dossier from ${session.turns.length} turns...`);
@@ -99,6 +140,7 @@ Hard rules:
 - Constraints go in the constraints object; they are sealed by design, so record them faithfully.
 - The manager_manual is written TO a future manager, warm and specific, derived from the stories.
 - Set meta.candidate_reviewed to false: the candidate has not reviewed this draft yet.
+- Candidate-provided evidence links, when present: create an artifacts[] entry per link (choose the closest type; provenance must say the link was candidate-provided on the evidence screen and describe what the URL is) and reference it from the matching claim's evidence[]. Tier rules: a linked claim is tier 1 by default; tier 2 ONLY if the URL itself is an independently checkable public source of origin/date/authorship (an official org page, press coverage, a public repository, a public filing) — judge from the URL, do not guess beyond it. You cannot browse: never describe link contents you haven't seen; provenance describes what the candidate says the link shows. Unlinked claims stay tier 0.
 
 Return ONLY the dossier JSON, no prose. It must validate against this JSON Schema:
 ${JSON.stringify(schema)}`,
@@ -108,7 +150,7 @@ ${JSON.stringify(schema)}`,
       content:
         (session.resumeText
           ? `Candidate's uploaded resume (UNVERIFIED, candidate-provided; anything appearing ONLY here and never discussed in the interview stays tier 0 and should generally be omitted from headline_numbers):\n---\n${session.resumeText}\n---\n\n`
-          : "") + `Interview transcript:\n\n${transcript}`,
+          : "") + `Interview transcript:\n\n${transcript}` + evidenceBlock,
     },
   ],
 }).finalMessage();

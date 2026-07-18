@@ -24,6 +24,20 @@ export interface Turn {
   at: string;
 }
 
+// A claim the evidence-flagging pass surfaced as plausibly link-backable.
+export interface EvidenceClaim {
+  id: string;
+  claim: string;
+  hint: string;
+}
+
+// A candidate's pasted link backing one flagged claim.
+export interface EvidenceItem {
+  claim_id: string;
+  url: string;
+  note?: string;
+}
+
 export interface InterviewSession {
   id: string;
   candidateName?: string;

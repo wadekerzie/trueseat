@@ -8,8 +8,16 @@ type Stage =
   | "recording"
   | "processing"
   | "confirm"
+  | "evidence_loading"
+  | "evidence"
   | "done"
   | "error";
+
+interface EvidenceClaim {
+  id: string;
+  claim: string;
+  hint: string;
+}
 
 const ACCENT = "#6B9FD4";
 
@@ -48,6 +56,10 @@ export default function InterviewClient() {
   const lastPayloadRef = useRef<Record<string, string> | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
+  const [claims, setClaims] = useState<EvidenceClaim[]>([]);
+  const [links, setLinks] = useState<Record<string, string>>({});
+  const [savedLinks, setSavedLinks] = useState(0);
+  const [evidenceBusy, setEvidenceBusy] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -65,9 +77,14 @@ export default function InterviewClient() {
           setQuestion(s.question);
           setPhase(s.phase);
           setStage("asking");
+        } else if (s && s.done) {
+          // Finished interviewing but may have left before the evidence step.
+          setSessionId(saved);
+          enterEvidence(saved);
         }
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const start = useCallback(async () => {
@@ -176,11 +193,67 @@ export default function InterviewClient() {
     rec.stop();
   }, [submitAnswer]);
 
+  // The evidence step. The interview is done; a claims pass lists what a link
+  // could back, the candidate pastes links (or skips), then we truly finish.
+  const enterEvidence = useCallback(
+    async (id: string) => {
+      setStage("evidence_loading");
+      try {
+        const res = await fetch(`/api/interview/${id}/evidence`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (data.submitted || !data.claims?.length) {
+          localStorage.removeItem("trueseat_session");
+          setStage("done");
+          return;
+        }
+        setClaims(data.claims);
+        setStage("evidence");
+      } catch {
+        // Evidence is additive; never strand a finished interview behind it.
+        localStorage.removeItem("trueseat_session");
+        setStage("done");
+      }
+    },
+    []
+  );
+
+  const submitEvidence = useCallback(async () => {
+    if (!sessionId) return;
+    setEvidenceBusy(true);
+    const items = Object.entries(links)
+      .map(([claim_id, raw]) => ({ claim_id, url: raw.trim() }))
+      .filter((i) => i.url)
+      .map((i) => ({
+        ...i,
+        url: /^https?:\/\//i.test(i.url) ? i.url : `https://${i.url}`,
+      }));
+    try {
+      const res = await fetch(`/api/interview/${sessionId}/evidence`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setSavedLinks(data.saved ?? items.length);
+    } catch {
+      // Same principle: a hiccup here must not trap the candidate.
+    }
+    localStorage.removeItem("trueseat_session");
+    setEvidenceBusy(false);
+    setStage("done");
+  }, [sessionId, links]);
+
   const advance = useCallback(() => {
     if (!pendingNext) return;
     if (pendingNext.done) {
-      localStorage.removeItem("trueseat_session");
-      setStage("done");
+      if (sessionId) {
+        enterEvidence(sessionId);
+      } else {
+        localStorage.removeItem("trueseat_session");
+        setStage("done");
+      }
       return;
     }
     setQuestion(pendingNext.question);
@@ -189,7 +262,7 @@ export default function InterviewClient() {
     setTranscript("");
     setTyped("");
     setStage("asking");
-  }, [pendingNext]);
+  }, [pendingNext, sessionId, enterEvidence]);
 
   const mm = String(Math.floor(elapsed / 60)).padStart(1, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
@@ -199,9 +272,14 @@ export default function InterviewClient() {
       <div className="mx-auto w-full max-w-2xl px-6 py-16 flex-1 flex flex-col">
         <div className="mb-10">
           <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9]">
-            TrueSeat Interview{phase && stage !== "welcome" ? ` · ${phase.replace("_", " ")}` : ""}
+            TrueSeat Interview
+            {stage === "evidence" || stage === "evidence_loading"
+              ? " · evidence"
+              : phase && phase !== "done" && stage !== "welcome"
+              ? ` · ${phase.replace("_", " ")}`
+              : ""}
           </p>
-          {phase && stage !== "welcome" && stage !== "done" && (
+          {phase && phase !== "done" && stage !== "welcome" && stage !== "done" && (
             <div className="flex gap-1.5 mt-3" aria-label={`Phase ${PHASE_ORDER.indexOf(phase) + 1} of ${PHASE_ORDER.length}`}>
               {PHASE_ORDER.map((p, i) => (
                 <span
@@ -371,9 +449,68 @@ export default function InterviewClient() {
           </div>
         )}
 
+        {stage === "evidence_loading" && (
+          <div className="my-auto">
+            <p className="text-lg text-[#a8b0c0] animate-pulse">
+              Going back through what you told us…
+            </p>
+          </div>
+        )}
+
+        {stage === "evidence" && (
+          <div className="my-auto py-8">
+            <h1 className="text-3xl font-semibold mb-3">Now back it up.</h1>
+            <p className="text-[#a8b0c0] leading-relaxed mb-2">
+              These are the claims from your interview that something public could
+              prove: a live product, a press mention, a company page, a repo, a
+              filing. Paste a link next to anything you can point at.
+            </p>
+            <p className="text-xs text-[#6d7585] leading-relaxed mb-8">
+              No link? Leave it blank — the claim stays in your dossier, marked
+              self-reported. Links are what move a claim up the verification ladder.
+            </p>
+            <div className="flex flex-col gap-6 mb-8">
+              {claims.map((c) => (
+                <div key={c.id} className="rounded-md border border-[#2a3242] bg-[#12161f] p-4">
+                  <p className="text-[#e8eaf0] leading-relaxed mb-1">{c.claim}</p>
+                  {c.hint && <p className="text-xs text-[#6d7585] mb-3">{c.hint}</p>}
+                  <input
+                    type="url"
+                    inputMode="url"
+                    value={links[c.id] ?? ""}
+                    onChange={(e) => setLinks((l) => ({ ...l, [c.id]: e.target.value }))}
+                    placeholder="https://…"
+                    className="w-full rounded-md bg-[#161b24] border border-[#2a3242] px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#6B9FD4]"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-4 items-center">
+              <button
+                onClick={submitEvidence}
+                disabled={evidenceBusy}
+                className="rounded-md px-6 py-3 font-medium text-[#0e1116] transition-colors disabled:opacity-50"
+                style={{ backgroundColor: ACCENT }}
+              >
+                {evidenceBusy
+                  ? "Saving…"
+                  : Object.values(links).some((v) => v.trim())
+                  ? "Attach links and finish"
+                  : "Finish without links"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {stage === "done" && (
           <div className="my-auto">
             <h1 className="text-3xl font-semibold mb-4">That&apos;s everything.</h1>
+            {savedLinks > 0 && (
+              <p className="text-[#c8cedb] leading-relaxed mb-3">
+                {savedLinks} {savedLinks === 1 ? "link" : "links"} attached — that
+                evidence goes into your dossier with the claims it backs.
+              </p>
+            )}
             <p className="text-[#a8b0c0] leading-relaxed">
               We&apos;re assembling your dossier now. We&apos;ll send you the draft link
               directly, and nothing goes anywhere until you&apos;ve approved every word.

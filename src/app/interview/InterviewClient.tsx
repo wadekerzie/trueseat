@@ -19,6 +19,24 @@ interface EvidenceClaim {
   hint: string;
 }
 
+// A document already uploaded for a claim (API shape from the evidence routes).
+interface UploadRec {
+  artifact_id: string;
+  claim_id: string;
+  file_name: string;
+  provenance_complete: boolean;
+}
+
+const EMPTY_PROV = { what: "", author: "", date: "", origin: "" };
+const MAX_UPLOAD_MB = 4;
+
+const PROV_FIELDS: { key: keyof typeof EMPTY_PROV; label: string; placeholder: string }[] = [
+  { key: "what", label: "What is this document?", placeholder: "e.g. FY24 President's Club award letter" },
+  { key: "author", label: "Who created it?", placeholder: "e.g. AT&T sales operations" },
+  { key: "date", label: "When?", placeholder: "e.g. January 2025" },
+  { key: "origin", label: "Where did it come from, and who could confirm it's real?", placeholder: "e.g. company HR portal; my former VP Jane Doe could confirm" },
+];
+
 const ACCENT = "#6B9FD4";
 
 // Mirrors PHASES in src/lib/interviewer.ts (not imported: that module pulls
@@ -60,6 +78,11 @@ export default function InterviewClient() {
   const [links, setLinks] = useState<Record<string, string>>({});
   const [savedLinks, setSavedLinks] = useState(0);
   const [evidenceBusy, setEvidenceBusy] = useState(false);
+  const [uploads, setUploads] = useState<UploadRec[]>([]);
+  const [uploadForm, setUploadForm] = useState<{ claimId: string; file: File } | null>(null);
+  const [prov, setProv] = useState(EMPTY_PROV);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadErr, setUploadErr] = useState("");
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -208,6 +231,7 @@ export default function InterviewClient() {
           return;
         }
         setClaims(data.claims);
+        setUploads(Array.isArray(data.uploads) ? data.uploads : []);
         setStage("evidence");
       } catch {
         // Evidence is additive; never strand a finished interview behind it.
@@ -244,6 +268,56 @@ export default function InterviewClient() {
     setEvidenceBusy(false);
     setStage("done");
   }, [sessionId, links]);
+
+  // Document uploads (X18 Phase 2). Picking a file opens the provenance
+  // form; the upload posts immediately on "Attach", independent of the final
+  // links submission, so nothing is lost if the candidate bails later.
+  const pickFile = useCallback((claimId: string, file: File | null) => {
+    if (!file) return;
+    setUploadErr("");
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      setUploadErr(`That file is over ${MAX_UPLOAD_MB}MB — export a smaller version and retry.`);
+      return;
+    }
+    setProv(EMPTY_PROV);
+    setUploadForm({ claimId, file });
+  }, []);
+
+  const submitUpload = useCallback(async () => {
+    if (!sessionId || !uploadForm) return;
+    setUploadBusy(true);
+    setUploadErr("");
+    try {
+      const fd = new FormData();
+      fd.append("file", uploadForm.file);
+      fd.append("claim_id", uploadForm.claimId);
+      for (const f of PROV_FIELDS) fd.append(f.key, prov[f.key]);
+      const res = await fetch(`/api/interview/${sessionId}/evidence/upload`, {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "upload failed");
+      setUploads((u) => [...u, data.upload]);
+      setUploadForm(null);
+    } catch (err) {
+      setUploadErr(err instanceof Error ? err.message : "Upload failed — try again.");
+    }
+    setUploadBusy(false);
+  }, [sessionId, uploadForm, prov]);
+
+  const deleteUpload = useCallback(
+    async (artifactId: string) => {
+      if (!sessionId) return;
+      setUploads((u) => u.filter((x) => x.artifact_id !== artifactId));
+      await fetch(`/api/interview/${sessionId}/evidence/upload`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ artifact_id: artifactId }),
+      }).catch(() => {});
+    },
+    [sessionId]
+  );
 
   const advance = useCallback(() => {
     if (!pendingNext) return;
@@ -466,24 +540,116 @@ export default function InterviewClient() {
               filing. Paste a link next to anything you can point at.
             </p>
             <p className="text-xs text-[#6d7585] leading-relaxed mb-8">
-              No link? Leave it blank — the claim stays in your dossier, marked
-              self-reported. Links are what move a claim up the verification ladder.
+              Nothing public? Attach a document instead — an award letter, a
+              comp statement, a certificate. Tell us where it came from and
+              who could confirm it&apos;s real, and the claim moves up to
+              provenance-verified. No link, no document? Leave it blank — the
+              claim stays in your dossier, marked self-reported.
             </p>
+            {uploadErr && (
+              <p className="text-sm text-[#E8896A] mb-4">{uploadErr}</p>
+            )}
             <div className="flex flex-col gap-6 mb-8">
-              {claims.map((c) => (
-                <div key={c.id} className="rounded-md border border-[#2a3242] bg-[#12161f] p-4">
-                  <p className="text-[#e8eaf0] leading-relaxed mb-1">{c.claim}</p>
-                  {c.hint && <p className="text-xs text-[#6d7585] mb-3">{c.hint}</p>}
-                  <input
-                    type="url"
-                    inputMode="url"
-                    value={links[c.id] ?? ""}
-                    onChange={(e) => setLinks((l) => ({ ...l, [c.id]: e.target.value }))}
-                    placeholder="https://…"
-                    className="w-full rounded-md bg-[#161b24] border border-[#2a3242] px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#6B9FD4]"
-                  />
-                </div>
-              ))}
+              {claims.map((c) => {
+                const claimUploads = uploads.filter((u) => u.claim_id === c.id);
+                const formOpen = uploadForm?.claimId === c.id;
+                return (
+                  <div key={c.id} className="rounded-md border border-[#2a3242] bg-[#12161f] p-4">
+                    <p className="text-[#e8eaf0] leading-relaxed mb-1">{c.claim}</p>
+                    {c.hint && <p className="text-xs text-[#6d7585] mb-3">{c.hint}</p>}
+                    <input
+                      type="url"
+                      inputMode="url"
+                      value={links[c.id] ?? ""}
+                      onChange={(e) => setLinks((l) => ({ ...l, [c.id]: e.target.value }))}
+                      placeholder="https://…"
+                      className="w-full rounded-md bg-[#161b24] border border-[#2a3242] px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#6B9FD4]"
+                    />
+                    {claimUploads.map((u) => (
+                      <div
+                        key={u.artifact_id}
+                        className="mt-2 flex items-center gap-2 text-sm text-[#c8cedb]"
+                      >
+                        <span aria-hidden>📄</span>
+                        <span className="truncate">{u.file_name}</span>
+                        <span className="text-[11px] text-[#6d7585]">
+                          {u.provenance_complete
+                            ? "provenance on record"
+                            : "provenance incomplete"}
+                        </span>
+                        <button
+                          onClick={() => deleteUpload(u.artifact_id)}
+                          className="ml-auto text-[#6d7585] hover:text-[#E8896A]"
+                          aria-label={`Remove ${u.file_name}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {!formOpen && (
+                      <label className="mt-3 inline-block text-xs text-[#8ab4e0] cursor-pointer underline underline-offset-4">
+                        or attach a document
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,.webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            pickFile(c.id, e.target.files?.[0] ?? null);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                    )}
+                    {formOpen && uploadForm && (
+                      <div className="mt-4 rounded-md border border-[#2a4a6b] bg-[#111722] p-4">
+                        <p className="text-sm text-[#c8cedb] mb-1 truncate">
+                          {uploadForm.file.name}
+                        </p>
+                        <p className="text-xs text-[#6d7585] leading-relaxed mb-4">
+                          Answer all four and this document carries checkable
+                          provenance — that&apos;s what moves the claim to
+                          provenance-verified instead of just attached.
+                        </p>
+                        <div className="flex flex-col gap-3 mb-4">
+                          {PROV_FIELDS.map((f) => (
+                            <div key={f.key}>
+                              <label className="block text-xs text-[#a8b0c0] mb-1">
+                                {f.label}
+                              </label>
+                              <input
+                                type="text"
+                                value={prov[f.key]}
+                                onChange={(e) =>
+                                  setProv((p) => ({ ...p, [f.key]: e.target.value }))
+                                }
+                                placeholder={f.placeholder}
+                                className="w-full rounded-md bg-[#161b24] border border-[#2a3242] px-3 py-2 text-sm text-[#e8eaf0] focus:outline-none focus:border-[#6B9FD4]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-3 items-center">
+                          <button
+                            onClick={submitUpload}
+                            disabled={uploadBusy}
+                            className="rounded-md px-4 py-2 text-sm font-medium text-[#0e1116] disabled:opacity-50"
+                            style={{ backgroundColor: ACCENT }}
+                          >
+                            {uploadBusy ? "Uploading…" : "Attach document"}
+                          </button>
+                          <button
+                            onClick={() => setUploadForm(null)}
+                            disabled={uploadBusy}
+                            className="text-sm text-[#6d7585] underline underline-offset-4"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="flex gap-4 items-center">
               <button
@@ -496,7 +662,9 @@ export default function InterviewClient() {
                   ? "Saving…"
                   : Object.values(links).some((v) => v.trim())
                   ? "Attach links and finish"
-                  : "Finish without links"}
+                  : uploads.length > 0
+                  ? "Finish"
+                  : "Finish without evidence"}
               </button>
             </div>
           </div>
@@ -505,10 +673,18 @@ export default function InterviewClient() {
         {stage === "done" && (
           <div className="my-auto">
             <h1 className="text-3xl font-semibold mb-4">That&apos;s everything.</h1>
-            {savedLinks > 0 && (
+            {(savedLinks > 0 || uploads.length > 0) && (
               <p className="text-[#c8cedb] leading-relaxed mb-3">
-                {savedLinks} {savedLinks === 1 ? "link" : "links"} attached — that
-                evidence goes into your dossier with the claims it backs.
+                {[
+                  savedLinks > 0 &&
+                    `${savedLinks} ${savedLinks === 1 ? "link" : "links"}`,
+                  uploads.length > 0 &&
+                    `${uploads.length} ${uploads.length === 1 ? "document" : "documents"}`,
+                ]
+                  .filter(Boolean)
+                  .join(" and ")}{" "}
+                attached — that evidence goes into your dossier with the claims
+                it backs.
               </p>
             )}
             <p className="text-[#a8b0c0] leading-relaxed">

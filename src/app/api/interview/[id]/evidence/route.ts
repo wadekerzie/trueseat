@@ -6,7 +6,13 @@
 
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/store";
-import { getOrCreateClaims, loadEvidence, saveEvidence } from "@/lib/evidence";
+import {
+  getOrCreateClaims,
+  loadEvidence,
+  saveEvidence,
+  loadUploads,
+  provenanceComplete,
+} from "@/lib/evidence";
 import type { EvidenceItem } from "@/lib/types";
 
 export async function GET(
@@ -21,11 +27,23 @@ export async function GET(
   if (session.phase !== "done") {
     return NextResponse.json({ error: "interview not finished" }, { status: 409 });
   }
-  const [claims, items] = await Promise.all([
+  const [claims, items, uploads] = await Promise.all([
     getOrCreateClaims(session),
     loadEvidence(session.id),
+    loadUploads(session.id),
   ]);
-  return NextResponse.json({ claims, items, submitted: items !== null });
+  return NextResponse.json({
+    claims,
+    items,
+    submitted: items !== null,
+    uploads: uploads.map((u) => ({
+      artifact_id: u.artifact_id,
+      claim_id: u.claim_id,
+      file_name: u.file_name,
+      size: u.size,
+      provenance_complete: provenanceComplete(u.provenance),
+    })),
+  });
 }
 
 export async function POST(

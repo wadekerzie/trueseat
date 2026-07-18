@@ -7,10 +7,15 @@
 // change was needed. Server-side only: uses the secret key like store.ts.
 // Dev fallback without Supabase env: JSON files under .data/evidence/.
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile, unlink, readdir } from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import type { EvidenceClaim, EvidenceItem, InterviewSession } from "./types";
+import type {
+  EvidenceClaim,
+  EvidenceItem,
+  EvidenceUpload,
+  InterviewSession,
+} from "./types";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -128,4 +133,216 @@ export async function loadEvidence(sessionId: string): Promise<EvidenceItem[] | 
 export async function saveEvidence(sessionId: string, items: EvidenceItem[]): Promise<void> {
   if (useSupabase) await insertEvent("evidence_submitted", sessionId, { items });
   else await fileWrite(`${sessionId}.items.json`, { items });
+}
+
+// ---------------------------------------------------------------------------
+// X18 Phase 2: document uploads. Files live in the private "evidence" bucket
+// at {sessionId}/{artifactId}/{fileName}; each upload is one append-only
+// event row (kind "evidence_upload"), removal is a tombstone row (kind
+// "evidence_upload_removed"). Dev fallback: .data/evidence/files/.
+
+export const EVIDENCE_BUCKET = "evidence";
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024; // Vercel caps request bodies ~4.5MB
+
+// Allowlist by extension; the served content-type comes from here, never from
+// the client, so an uploaded file can't smuggle an executable mime.
+export const UPLOAD_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  txt: "text/plain",
+  md: "text/plain",
+  csv: "text/csv",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+
+const FILES_DIR = path.join(DATA_DIR, "files");
+
+function storageUrl(objectPath: string): string {
+  return `${SUPABASE_URL}/storage/v1/object/${EVIDENCE_BUCKET}/${objectPath
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
+}
+
+function storageHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    apikey: SUPABASE_KEY!,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    ...extra,
+  };
+}
+
+// Idempotent: creates the private bucket on first use, tolerates "already
+// exists" forever after. Cached per lambda instance.
+let bucketEnsured = false;
+async function ensureBucket(): Promise<void> {
+  if (bucketEnsured || !useSupabase) return;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+    method: "POST",
+    headers: storageHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({
+      id: EVIDENCE_BUCKET,
+      name: EVIDENCE_BUCKET,
+      public: false,
+      file_size_limit: MAX_UPLOAD_BYTES,
+    }),
+  });
+  if (!res.ok && res.status !== 409) {
+    const text = await res.text();
+    // Supabase reports an existing bucket as 400 "already exists", not 409.
+    if (!text.includes("already exists")) {
+      throw new Error(`bucket create failed: ${res.status} ${text}`);
+    }
+  }
+  bucketEnsured = true;
+}
+
+export async function storeUploadFile(
+  storagePath: string,
+  mime: string,
+  bytes: Uint8Array
+): Promise<void> {
+  if (useSupabase) {
+    await ensureBucket();
+    const res = await fetch(storageUrl(storagePath), {
+      method: "POST",
+      headers: storageHeaders({ "Content-Type": mime, "x-upsert": "true" }),
+      body: new Blob([bytes as BlobPart]),
+    });
+    if (!res.ok) {
+      throw new Error(`storage upload failed: ${res.status} ${await res.text()}`);
+    }
+  } else {
+    const dest = path.join(FILES_DIR, storagePath);
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, bytes);
+  }
+}
+
+export async function readUploadFile(storagePath: string): Promise<Uint8Array | null> {
+  if (useSupabase) {
+    const res = await fetch(storageUrl(storagePath), { headers: storageHeaders() });
+    if (!res.ok) return null;
+    return new Uint8Array(await res.arrayBuffer());
+  }
+  try {
+    return new Uint8Array(await readFile(path.join(FILES_DIR, storagePath)));
+  } catch {
+    return null;
+  }
+}
+
+async function deleteUploadFile(storagePath: string): Promise<void> {
+  if (useSupabase) {
+    await fetch(storageUrl(storagePath), { method: "DELETE", headers: storageHeaders() });
+  } else {
+    await unlink(path.join(FILES_DIR, storagePath)).catch(() => {});
+  }
+}
+
+async function uploadEvents(sessionId: string): Promise<{ uploads: EvidenceUpload[]; removed: Set<string> }> {
+  if (useSupabase) {
+    const [upRes, rmRes] = await Promise.all([
+      rest(`/events?kind=eq.evidence_upload&session_id=eq.${sessionId}&order=at.asc,id.asc&select=data`),
+      rest(`/events?kind=eq.evidence_upload_removed&session_id=eq.${sessionId}&select=data`),
+    ]);
+    const uploads = upRes.ok
+      ? ((await upRes.json()) as { data: EvidenceUpload }[]).map((r) => r.data)
+      : [];
+    const removed = new Set(
+      rmRes.ok
+        ? ((await rmRes.json()) as { data: { artifact_id: string } }[]).map(
+            (r) => r.data.artifact_id
+          )
+        : []
+    );
+    return { uploads, removed };
+  }
+  const stored =
+    (await fileRead<{ uploads: EvidenceUpload[]; removed: string[] }>(
+      `${sessionId}.uploads.json`
+    )) ?? { uploads: [], removed: [] };
+  return { uploads: stored.uploads, removed: new Set(stored.removed) };
+}
+
+// The live (non-removed) uploads for a session, oldest first.
+export async function loadUploads(sessionId: string): Promise<EvidenceUpload[]> {
+  const { uploads, removed } = await uploadEvents(sessionId);
+  return uploads.filter((u) => !removed.has(u.artifact_id));
+}
+
+export async function saveUpload(upload: EvidenceUpload): Promise<void> {
+  if (useSupabase) {
+    await insertEvent("evidence_upload", upload.session_id, upload);
+  } else {
+    const stored =
+      (await fileRead<{ uploads: EvidenceUpload[]; removed: string[] }>(
+        `${upload.session_id}.uploads.json`
+      )) ?? { uploads: [], removed: [] };
+    stored.uploads.push(upload);
+    await fileWrite(`${upload.session_id}.uploads.json`, stored);
+  }
+}
+
+// Tombstone the event row and delete the stored object.
+export async function removeUpload(sessionId: string, artifactId: string): Promise<boolean> {
+  const uploads = await loadUploads(sessionId);
+  const target = uploads.find((u) => u.artifact_id === artifactId);
+  if (!target) return false;
+  if (useSupabase) {
+    await insertEvent("evidence_upload_removed", sessionId, { artifact_id: artifactId });
+  } else {
+    const stored =
+      (await fileRead<{ uploads: EvidenceUpload[]; removed: string[] }>(
+        `${sessionId}.uploads.json`
+      )) ?? { uploads: [], removed: [] };
+    stored.removed.push(artifactId);
+    await fileWrite(`${sessionId}.uploads.json`, stored);
+  }
+  await deleteUploadFile(target.storage_path);
+  return true;
+}
+
+// Cross-session lookup for the /a/[artifactId] viewer. Artifact ids are
+// unguessable UUIDs — same access posture as /d/[id] share links.
+export async function findUpload(artifactId: string): Promise<EvidenceUpload | null> {
+  if (useSupabase) {
+    const [upRes, rmRes] = await Promise.all([
+      rest(
+        `/events?kind=eq.evidence_upload&data->>artifact_id=eq.${artifactId}&order=at.desc,id.desc&limit=1&select=data`
+      ),
+      rest(
+        `/events?kind=eq.evidence_upload_removed&data->>artifact_id=eq.${artifactId}&limit=1&select=data`
+      ),
+    ]);
+    if (!upRes.ok) return null;
+    const rows = (await upRes.json()) as { data: EvidenceUpload }[];
+    if (!rows.length) return null;
+    const removed = rmRes.ok && ((await rmRes.json()) as unknown[]).length > 0;
+    return removed ? null : rows[0].data;
+  }
+  try {
+    const names = await readdir(DATA_DIR);
+    for (const name of names) {
+      if (!name.endsWith(".uploads.json")) continue;
+      const stored = await fileRead<{ uploads: EvidenceUpload[]; removed: string[] }>(name);
+      const hit = stored?.uploads.find((u) => u.artifact_id === artifactId);
+      if (hit && !stored!.removed.includes(artifactId)) return hit;
+    }
+  } catch {
+    // no data dir yet
+  }
+  return null;
+}
+
+// A provenance form counts as complete — tier-2 eligible — when every field
+// is answered with something substantive, not one-character noise.
+export function provenanceComplete(p: EvidenceUpload["provenance"]): boolean {
+  return [p.what, p.author, p.date, p.origin].every(
+    (v) => typeof v === "string" && v.trim().length >= 2
+  );
 }

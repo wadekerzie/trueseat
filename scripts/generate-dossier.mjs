@@ -123,6 +123,55 @@ try {
   console.error("evidence lookup failed (continuing without):", err.message);
 }
 
+// X18 Phase 2: candidate-uploaded documents. Append-only evidence_upload
+// events minus evidence_upload_removed tombstones; dev fallback reads
+// .data/evidence/{id}.uploads.json. Each upload carries the four-field
+// provenance form; all four answered = tier-2 eligible.
+const provenanceComplete = (p) =>
+  ["what", "author", "date", "origin"].every(
+    (k) => typeof p?.[k] === "string" && p[k].trim().length >= 2
+  );
+
+let uploadsBlock = "";
+try {
+  let ups = [];
+  if (useSupabase) {
+    const [upRows, rmRows] = await Promise.all([
+      (await rest(`/events?kind=eq.evidence_upload&session_id=eq.${sessionId}&order=at.asc,id.asc&select=data`)).json(),
+      (await rest(`/events?kind=eq.evidence_upload_removed&session_id=eq.${sessionId}&select=data`)).json(),
+    ]);
+    const removed = new Set(rmRows.map((r) => r.data.artifact_id));
+    ups = upRows.map((r) => r.data).filter((u) => !removed.has(u.artifact_id));
+  } else if (existsSync(`.data/evidence/${sessionId}.uploads.json`)) {
+    const stored = JSON.parse(readFileSync(`.data/evidence/${sessionId}.uploads.json`, "utf8"));
+    ups = stored.uploads.filter((u) => !stored.removed.includes(u.artifact_id));
+  }
+  if (ups.length) {
+    const claimsData = useSupabase
+      ? await latestEventData("evidence_claims")
+      : existsSync(`.data/evidence/${sessionId}.claims.json`)
+      ? JSON.parse(readFileSync(`.data/evidence/${sessionId}.claims.json`, "utf8"))
+      : null;
+    const evClaims = claimsData?.claims ?? [];
+    const lines = ups.map((u) => {
+      const claim = evClaims.find((c) => c.id === u.claim_id);
+      const p = u.provenance ?? {};
+      return [
+        `- Claim: ${claim ? claim.claim : u.claim_id}`,
+        `  Uploaded file: ${u.file_name} (${u.mime})`,
+        `  Artifact viewer URL: https://trueseat.io/a/${u.artifact_id}`,
+        `  Storage path: ${u.storage_path}`,
+        `  Provenance form (candidate-attested): what="${p.what ?? ""}"; author="${p.author ?? ""}"; date="${p.date ?? ""}"; origin/confirmer="${p.origin ?? ""}"`,
+        `  Provenance form complete: ${provenanceComplete(p) ? "YES (tier 2 eligible)" : "NO (tier 1 only)"}`,
+      ].join("\n");
+    });
+    uploadsBlock = `\n\nCandidate-uploaded evidence documents (uploaded on the post-interview evidence screen, stored privately, viewable at the artifact viewer URL):\n${lines.join("\n")}\n`;
+    console.log(`Including ${ups.length} candidate-uploaded document(s).`);
+  }
+} catch (err) {
+  console.error("uploads lookup failed (continuing without):", err.message);
+}
+
 const anthropic = new Anthropic();
 
 console.log(`Extracting dossier from ${session.turns.length} turns...`);
@@ -141,6 +190,7 @@ Hard rules:
 - The manager_manual is written TO a future manager, warm and specific, derived from the stories.
 - Set meta.candidate_reviewed to false: the candidate has not reviewed this draft yet.
 - Candidate-provided evidence links, when present: create an artifacts[] entry per link (choose the closest type; provenance must say the link was candidate-provided on the evidence screen and describe what the URL is) and reference it from the matching claim's evidence[]. Tier rules: a linked claim is tier 1 by default; tier 2 ONLY if the URL itself is an independently checkable public source of origin/date/authorship (an official org page, press coverage, a public repository, a public filing) — judge from the URL, do not guess beyond it. You cannot browse: never describe link contents you haven't seen; provenance describes what the candidate says the link shows. Unlinked claims stay tier 0.
+- Candidate-uploaded evidence documents, when present: create an artifacts[] entry per upload (type "document" unless another type clearly fits better; set url to the artifact viewer URL and storage_path to the given storage path) and reference it from the matching claim's evidence[]. The artifact's provenance field restates the candidate's provenance form answers, explicitly framed as candidate-attested. Tier rules: a claim backed by an uploaded document is tier 1; tier 2 when the provenance form is marked complete — origin, authorship, and date are on record with a named confirmable source, which makes it checkable. You cannot open files: never describe document contents; describe only what the candidate's form says it is. A document never earns tier 3 — that requires a witness.
 
 Return ONLY the dossier JSON, no prose. It must validate against this JSON Schema:
 ${JSON.stringify(schema)}`,
@@ -150,7 +200,7 @@ ${JSON.stringify(schema)}`,
       content:
         (session.resumeText
           ? `Candidate's uploaded resume (UNVERIFIED, candidate-provided; anything appearing ONLY here and never discussed in the interview stays tier 0 and should generally be omitted from headline_numbers):\n---\n${session.resumeText}\n---\n\n`
-          : "") + `Interview transcript:\n\n${transcript}` + evidenceBlock,
+          : "") + `Interview transcript:\n\n${transcript}` + evidenceBlock + uploadsBlock,
     },
   ],
 }).finalMessage();

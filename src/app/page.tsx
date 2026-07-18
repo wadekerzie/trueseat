@@ -1,10 +1,10 @@
+import Wordmark from "@/components/Wordmark";
+
 export default function Home() {
   return (
     <main className="min-h-screen w-full bg-[#0e1116] text-[#e8eaf0] flex flex-col">
       <div className="mx-auto w-full max-w-3xl px-6 py-24 flex-1 flex flex-col justify-center">
-        <p className="text-sm tracking-[0.25em] uppercase text-[#7fa6d9] mb-6">
-          TrueSeat
-        </p>
+        <Wordmark className="text-2xl mb-8" />
         <h1 className="text-4xl sm:text-5xl font-semibold leading-tight mb-6">
           Resumes are claims.
           <br />

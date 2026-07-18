@@ -2,6 +2,8 @@
 // (real, from Supabase) render the same component so the sample never drifts
 // from the product. Data shape follows schema/dossier.schema.json.
 
+import Wordmark from "@/components/Wordmark";
+
 interface Evidence {
   artifact_id: string;
   note?: string;
@@ -441,14 +443,19 @@ export default function DossierView({
         </Section>
 
         <footer className="pt-8 border-t border-[#1c2230] text-sm text-[#6d7585]">
-          <p className="mb-2">
+          <p className="mb-4">
             Every claim above carries a verification tier: self-reported →
             artifact-backed → provenance-verified → witness-verified.
           </p>
-          <p>
-            TrueSeat{footerNote ? ` · ${footerNote}` : ""} ·{" "}
-            <a href="/" className="underline underline-offset-4">trueseat.io</a>
-          </p>
+          <div className="flex items-center justify-between gap-4">
+            <a href="/" className="text-[#e8eaf0] no-underline" aria-label="TrueSeat">
+              <Wordmark className="text-base" />
+            </a>
+            <p>
+              {footerNote ? `${footerNote} · ` : ""}
+              <a href="/" className="underline underline-offset-4">trueseat.io</a>
+            </p>
+          </div>
         </footer>
       </div>
     </main>

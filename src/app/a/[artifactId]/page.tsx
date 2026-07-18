@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { findUpload, provenanceComplete } from "@/lib/evidence";
+import Wordmark from "@/components/Wordmark";
 
 // X18 Phase 2: the artifact viewer. Dossier artifact cards link here for
 // uploaded documents. Shows the candidate's provenance answers next to an
@@ -33,9 +34,14 @@ export default async function ArtifactPage({
   return (
     <main className="min-h-screen bg-[#0e1116] text-[#e8eaf0] px-6 py-12">
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9] mb-6">
-          TrueSeat · evidence artifact
-        </p>
+        <div className="flex items-baseline gap-3 mb-6">
+          <a href="/" className="no-underline" aria-label="TrueSeat">
+            <Wordmark className="text-lg" />
+          </a>
+          <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9]">
+            evidence artifact
+          </p>
+        </div>
         <h1 className="text-2xl font-semibold mb-2 break-words">
           {upload.provenance.what.trim() || upload.file_name}
         </h1>

@@ -153,7 +153,13 @@ export default function InterviewClient() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = pickMimeType();
-      const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      // 32kbps opus is transparent for speech and keeps even a 10-minute answer
+      // far under Vercel's ~4.5MB request cap (default browser bitrates hit the
+      // cap at ~3.5 minutes — a long first answer used to 413).
+      const rec = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: 32000,
+      });
       chunksRef.current = [];
       rec.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
       rec.start();
@@ -173,6 +179,17 @@ export default function InterviewClient() {
       // Keep the payload so a network/service hiccup never costs the candidate
       // a recorded answer — the error screen can resubmit it verbatim.
       lastPayloadRef.current = payload;
+      // Vercel rejects request bodies over ~4.5MB before our code runs, so a
+      // resend of an oversized recording can never succeed — tell the candidate
+      // the truth instead of offering a doomed retry.
+      if (payload.audioBase64 && payload.audioBase64.length > 4_000_000) {
+        lastPayloadRef.current = null;
+        setErrorMsg(
+          "That answer was too long to upload in one piece. Tap \"Try again\" and give the shorter version — the follow-up questions will pull out the detail."
+        );
+        setStage("error");
+        return;
+      }
       setStage("processing");
       try {
         const res = await fetch(`/api/interview/${sessionId}/answer`, {

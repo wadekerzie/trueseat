@@ -8,8 +8,10 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const useSupabase = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
 export const ANSWERS_BUCKET = "answers";
-// Generous ceiling: ~4 hours at 32kbps. A sanity bound, not a product limit.
-export const MAX_ANSWER_BYTES = 60 * 1024 * 1024;
+// Generous ceiling: ~3.6 hours at 32kbps. A sanity bound, not a product
+// limit. Must not exceed the Supabase project's global upload cap (50MB) or
+// bucket creation is rejected with a 413.
+export const MAX_ANSWER_BYTES = 50 * 1024 * 1024;
 
 function headers(extra: Record<string, string> = {}): Record<string, string> {
   return {

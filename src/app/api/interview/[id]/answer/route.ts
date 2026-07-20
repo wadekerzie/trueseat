@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { getSession, saveSession } from "@/lib/store";
 import { ingestAudio } from "@/lib/ears";
 import { nextQuestion } from "@/lib/interviewer";
+import { readAnswerAudioBase64 } from "@/lib/answers";
 import type { IngestResult, Turn } from "@/lib/types";
+
+// X22: long answers transcribe for a while (Gemini on a 30-60 min recording).
+// Default function timeout would cut them off mid-ingest.
+export const maxDuration = 300;
 
 export async function POST(
   req: Request,
@@ -18,9 +23,14 @@ export async function POST(
   }
 
   const body = await req.json().catch(() => null);
-  if (!body || (!body.text && !(body.audioBase64 && body.mimeType))) {
+  if (
+    !body ||
+    (!body.text &&
+      !(body.audioBase64 && body.mimeType) &&
+      !(body.audioPath && body.mimeType))
+  ) {
     return NextResponse.json(
-      { error: "provide text, or audioBase64 + mimeType" },
+      { error: "provide text, audioPath + mimeType, or audioBase64 + mimeType" },
       { status: 400 }
     );
   }
@@ -28,7 +38,19 @@ export async function POST(
   let answer: string;
   let ingest: IngestResult | undefined;
   let mode: Turn["mode"];
-  if (body.audioBase64) {
+  if (body.audioPath) {
+    // X22 path: the browser uploaded the recording straight to storage.
+    const audioBase64 = await readAnswerAudioBase64(id, String(body.audioPath));
+    if (!audioBase64) {
+      return NextResponse.json(
+        { error: "recording not found in storage" },
+        { status: 404 }
+      );
+    }
+    ingest = await ingestAudio(audioBase64, body.mimeType);
+    answer = ingest.transcript;
+    mode = "voice";
+  } else if (body.audioBase64) {
     ingest = await ingestAudio(body.audioBase64, body.mimeType);
     answer = ingest.transcript;
     mode = "voice";

@@ -72,6 +72,7 @@ export default function InterviewClient() {
   const [resumeText, setResumeText] = useState<string | null>(null);
   const [resumeStatus, setResumeStatus] = useState<string | null>(null);
   const lastPayloadRef = useRef<Record<string, string> | null>(null);
+  const lastBlobRef = useRef<{ blob: Blob; mimeType: string } | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [claims, setClaims] = useState<EvidenceClaim[]>([]);
@@ -179,17 +180,6 @@ export default function InterviewClient() {
       // Keep the payload so a network/service hiccup never costs the candidate
       // a recorded answer — the error screen can resubmit it verbatim.
       lastPayloadRef.current = payload;
-      // Vercel rejects request bodies over ~4.5MB before our code runs, so a
-      // resend of an oversized recording can never succeed — tell the candidate
-      // the truth instead of offering a doomed retry.
-      if (payload.audioBase64 && payload.audioBase64.length > 4_000_000) {
-        lastPayloadRef.current = null;
-        setErrorMsg(
-          "That answer was too long to upload in one piece. Tap \"Try again\" and give the shorter version — the follow-up questions will pull out the detail."
-        );
-        setStage("error");
-        return;
-      }
       setStage("processing");
       try {
         const res = await fetch(`/api/interview/${sessionId}/answer`, {
@@ -213,6 +203,53 @@ export default function InterviewClient() {
     [sessionId]
   );
 
+  // X22: recordings go straight to storage via a signed URL, so answer length
+  // is unlimited — Vercel's request-body cap never sees the audio. The blob is
+  // kept for retry until the upload succeeds; after that, the storage path is
+  // what gets resent (the object is already safe server-side).
+  const submitAudio = useCallback(
+    async (blob: Blob, mimeType: string) => {
+      lastBlobRef.current = { blob, mimeType };
+      lastPayloadRef.current = null;
+      setStage("processing");
+      try {
+        const urlRes = await fetch(`/api/interview/${sessionId}/answer-upload`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ mimeType }),
+        });
+        if (urlRes.status === 503) {
+          // Local dev without storage: fall back to inline base64 for short
+          // clips (Vercel's cap doesn't apply to localhost anyway).
+          const base64 = await new Promise<string>((resolve) => {
+            const fr = new FileReader();
+            fr.onloadend = () => resolve(String(fr.result).split(",")[1]);
+            fr.readAsDataURL(blob);
+          });
+          lastBlobRef.current = null;
+          await submitAnswer({ audioBase64: base64, mimeType });
+          return;
+        }
+        if (!urlRes.ok) throw new Error(await urlRes.text());
+        const { path, uploadUrl } = await urlRes.json();
+        const put = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "content-type": mimeType, "x-upsert": "true" },
+          body: blob,
+        });
+        if (!put.ok) throw new Error(`upload ${put.status}`);
+        lastBlobRef.current = null;
+        await submitAnswer({ audioPath: path, mimeType });
+      } catch {
+        setErrorMsg(
+          "That answer didn't go through — your recording is still here, nothing was lost."
+        );
+        setStage("error");
+      }
+    },
+    [sessionId, submitAnswer]
+  );
+
   const stopRecording = useCallback(() => {
     const rec = recorderRef.current;
     if (!rec) return;
@@ -220,18 +257,10 @@ export default function InterviewClient() {
     rec.onstop = async () => {
       rec.stream.getTracks().forEach((t) => t.stop());
       const blob = new Blob(chunksRef.current, { type: rec.mimeType });
-      const base64 = await new Promise<string>((resolve) => {
-        const fr = new FileReader();
-        fr.onloadend = () => resolve(String(fr.result).split(",")[1]);
-        fr.readAsDataURL(blob);
-      });
-      await submitAnswer({
-        audioBase64: base64,
-        mimeType: rec.mimeType.split(";")[0] || "audio/webm",
-      });
+      await submitAudio(blob, rec.mimeType.split(";")[0] || "audio/webm");
     };
     rec.stop();
-  }, [submitAnswer]);
+  }, [submitAudio]);
 
   // The evidence step. The interview is done; a claims pass lists what a link
   // could back, the candidate pastes links (or skips), then we truly finish.
@@ -715,9 +744,16 @@ export default function InterviewClient() {
           <div className="my-auto">
             <p className="text-[#E8896A] mb-6">{errorMsg}</p>
             <div className="flex gap-4 items-center">
-              {lastPayloadRef.current ? (
+              {lastPayloadRef.current || lastBlobRef.current ? (
                 <button
-                  onClick={() => submitAnswer(lastPayloadRef.current!)}
+                  onClick={() => {
+                    if (lastPayloadRef.current) {
+                      submitAnswer(lastPayloadRef.current);
+                    } else if (lastBlobRef.current) {
+                      const { blob, mimeType } = lastBlobRef.current;
+                      submitAudio(blob, mimeType);
+                    }
+                  }}
                   className="rounded-md px-5 py-2.5 font-medium text-[#0e1116]"
                   style={{ backgroundColor: ACCENT }}
                 >
@@ -732,10 +768,11 @@ export default function InterviewClient() {
                   Try again
                 </button>
               )}
-              {lastPayloadRef.current && (
+              {(lastPayloadRef.current || lastBlobRef.current) && (
                 <button
                   onClick={() => {
                     lastPayloadRef.current = null;
+                    lastBlobRef.current = null;
                     setStage(sessionId ? "asking" : "welcome");
                   }}
                   className="text-sm text-[#6d7585] underline underline-offset-4"

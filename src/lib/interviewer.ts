@@ -47,7 +47,7 @@ export const PHASES: PhaseSpec[] = [
     ],
     turnBudget: 6,
     technique:
-      "Quantification discipline: an outcome is not captured until you have the number, the denominator or baseline, the timeframe, and how the candidate knows it (\"$4.2M against what quota? Over what period? Where does that figure live?\"). When a story names another person, get their role — they are witness candidates later. For the 1-2 biggest claims, ask what exists that shows it; mention once, naturally, that after the interview there is a screen where they can attach links and documents to back what they told you, so they should keep artifacts in mind.",
+      "Quantification discipline, with a ceiling: an outcome is well captured when you have the number, the baseline or denominator, the timeframe, and how the candidate knows it (\"$4.2M against what quota? Over what period? Where does that figure live?\"). Ask for that shape ONCE. Then treat each of these as a complete answer and move on: a percentage or growth rate offered instead of an absolute figure (\"35% year over year\" is a real answer, not a way-station to the dollar amount); a confidentiality or public-disclosure limit (\"I can't give segment revenue\" is legitimate inside most large companies, not evasion); a figure more than roughly ten years old, where nobody carries the exact number; and a gap between the candidate's scope and a larger public number, which usually just means the public figure aggregates more than they owned. Career progression is itself evidence: nobody is handed larger scope repeatedly without delivering, so a candidate who points at their own trajectory has answered you. When a story names another person, get their role — they are witness candidates later. For the 1-2 biggest claims, ask what exists that shows it; mention once, naturally, that after the interview there is a screen where they can attach links and documents to back what they told you, so they should keep artifacts in mind.",
   },
   {
     phase: "operating_profile",
@@ -88,7 +88,7 @@ export const PHASES: PhaseSpec[] = [
     ],
     turnBudget: 3,
     technique:
-      "Before your first question in this phase, silently list every headline number and uncertain claim from the whole conversation. Then read them back in batches of two or three per turn, each VERBATIM in the candidate's own words (\"you said 4.2 million in new logo revenue in fiscal 2024 — is that the exact figure you'll stand behind in any room?\"). Ask confirm or correct, nothing else — no new topics, no hypotheticals, no revisiting earlier phases. This phase is pure read-back. A figure the candidate softens or revises gets recorded at the revised value and is NOT adjudicated at the original.",
+      "Before your first question in this phase, silently list every headline number and uncertain claim from the whole conversation. Then read them back in batches of two or three per turn, each VERBATIM in the candidate's own words (\"you said 4.2 million in new logo revenue in fiscal 2024 — is that the exact figure you'll stand behind in any room?\"). Ask confirm or correct, nothing else — no new topics, no hypotheticals, no revisiting earlier phases. This phase is pure read-back. Accept the answer as given the first time: if the candidate confirms, it is adjudicated; if they revise, record the revised value; if they say it's a percentage only, confidential, or a rough recollection, record it exactly that way and move to the next — do NOT push a second time for a harder number than they will give. A figure the candidate softens or revises gets recorded at the revised value and is NOT adjudicated at the original. Read-back is verification of what they said, never pressure to say more.",
   },
   {
     phase: "witnesses",
@@ -111,6 +111,8 @@ const GUARDRAILS = `Rules that always apply:
 - Thin-answer rule: when an answer is a one-liner or a generality, dig exactly once with a sharper, more concrete version of the question. If it stays thin, take what's there and move on — never interrogate.
 - Never re-ask something already answered; build on it instead.
 - If a direct question goes unanswered twice (the candidate keeps answering something else), let it go permanently — note the gap and move forward. Chasing it a third time feels like an interrogation.
+- Respect confidentiality as a real answer, everywhere. When a candidate cites an NDA, a public-disclosure limit, or simply won't state an exact figure, that is a legitimate stopping point — accept it, capture the generalized version they will stand behind (a percentage, a range, a directional claim), and move on. Never re-ask for a harder number, and never imply that declining to disclose weakens their claim.
+- Proof lives on a spectrum, not a single bar. A published percentage, a title progression, a named witness, or "go read the 10-K" are all valid ways to back a claim. Do not insist on one specific form of proof (an exact dollar figure, a document) when the candidate has offered another that a reasonable evaluator would accept.
 - Operating-profile observations are behavioral and job-relevant only: no clinical labels, no personality-test taxonomy, no protected-characteristic inference.
 - If the candidate seems done with a phase's objective, move on rather than padding.`;
 

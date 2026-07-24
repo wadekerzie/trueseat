@@ -35,7 +35,7 @@ function rest(pathname: string, init: RequestInit = {}): Promise<Response> {
   });
 }
 
-async function latestEvent<T>(kind: string, sessionId: string): Promise<T | null> {
+export async function latestEvent<T>(kind: string, sessionId: string): Promise<T | null> {
   const res = await rest(
     `/events?kind=eq.${kind}&session_id=eq.${sessionId}&order=at.desc,id.desc&limit=1&select=data`
   );
@@ -44,7 +44,7 @@ async function latestEvent<T>(kind: string, sessionId: string): Promise<T | null
   return rows.length ? rows[0].data : null;
 }
 
-async function insertEvent(kind: string, sessionId: string, data: unknown): Promise<void> {
+export async function insertEvent(kind: string, sessionId: string, data: unknown): Promise<void> {
   const res = await rest(`/events`, {
     method: "POST",
     body: JSON.stringify({ kind, session_id: sessionId, data }),

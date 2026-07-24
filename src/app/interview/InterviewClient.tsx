@@ -84,6 +84,10 @@ export default function InterviewClient() {
   const [prov, setProv] = useState(EMPTY_PROV);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadErr, setUploadErr] = useState("");
+  const [dossierUrl, setDossierUrl] = useState<string | null>(null);
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [emailSaved, setEmailSaved] = useState(false);
+  const [emailBusy, setEmailBusy] = useState(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -272,7 +276,6 @@ export default function InterviewClient() {
         if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         if (data.submitted || !data.claims?.length) {
-          localStorage.removeItem("trueseat_session");
           setStage("done");
           return;
         }
@@ -281,7 +284,6 @@ export default function InterviewClient() {
         setStage("evidence");
       } catch {
         // Evidence is additive; never strand a finished interview behind it.
-        localStorage.removeItem("trueseat_session");
         setStage("done");
       }
     },
@@ -310,7 +312,6 @@ export default function InterviewClient() {
     } catch {
       // Same principle: a hiccup here must not trap the candidate.
     }
-    localStorage.removeItem("trueseat_session");
     setEvidenceBusy(false);
     setStage("done");
   }, [sessionId, links]);
@@ -364,6 +365,59 @@ export default function InterviewClient() {
     },
     [sessionId]
   );
+
+  // X25: the end screen kicks off server-side dossier generation and polls
+  // until the draft link exists, then hands it over in-page. A poll that
+  // finds neither a dossier nor a live generation marker re-POSTs, so a
+  // timed-out or crashed attempt self-heals while the candidate waits.
+  useEffect(() => {
+    if (stage !== "done" || !sessionId || dossierUrl) return;
+    let stopped = false;
+    const kick = () =>
+      fetch(`/api/interview/${sessionId}/dossier`, { method: "POST" }).catch(
+        () => {}
+      );
+    kick();
+    const iv = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/interview/${sessionId}/dossier`);
+        if (!res.ok || stopped) return;
+        const data = await res.json();
+        if (data.ready && data.url) {
+          setDossierUrl(data.url);
+          // Link delivered; a future visit starts fresh instead of resuming.
+          localStorage.removeItem("trueseat_session");
+          clearInterval(iv);
+        } else if (!data.generating) {
+          kick();
+        }
+      } catch {
+        // transient; next tick retries
+      }
+    }, 6000);
+    const cutoff = setTimeout(() => clearInterval(iv), 20 * 60 * 1000);
+    return () => {
+      stopped = true;
+      clearInterval(iv);
+      clearTimeout(cutoff);
+    };
+  }, [stage, sessionId, dossierUrl]);
+
+  const submitNotifyEmail = useCallback(async () => {
+    if (!sessionId || !notifyEmail.trim()) return;
+    setEmailBusy(true);
+    try {
+      const res = await fetch(`/api/interview/${sessionId}/contact`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: notifyEmail.trim() }),
+      });
+      if (res.ok) setEmailSaved(true);
+    } catch {
+      // leave the form up; the candidate can retry
+    }
+    setEmailBusy(false);
+  }, [sessionId, notifyEmail]);
 
   const advance = useCallback(() => {
     if (!pendingNext) return;
@@ -733,10 +787,72 @@ export default function InterviewClient() {
                 it backs.
               </p>
             )}
-            <p className="text-[#a8b0c0] leading-relaxed">
-              We&apos;re assembling your dossier now. We&apos;ll send you the draft link
-              directly, and nothing goes anywhere until you&apos;ve approved every word.
-            </p>
+            {dossierUrl ? (
+              <>
+                <p className="text-[#a8b0c0] leading-relaxed mb-6">
+                  Your draft dossier is ready. Read every word — nothing goes
+                  anywhere until you&apos;ve approved it.
+                </p>
+                <a
+                  href={dossierUrl}
+                  className="inline-block rounded-md px-5 py-2.5 font-medium text-[#0e1116]"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  Open your draft dossier
+                </a>
+              </>
+            ) : (
+              <>
+                <p className="text-[#a8b0c0] leading-relaxed">
+                  We&apos;re assembling your dossier now — it usually takes a few
+                  minutes. Keep this page open and the draft link will appear
+                  right here. Nothing goes anywhere until you&apos;ve approved
+                  every word.
+                </p>
+                <div className="flex gap-2 mt-6 max-w-md">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full animate-pulse mt-2 shrink-0"
+                    style={{ backgroundColor: ACCENT }}
+                    aria-hidden
+                  />
+                  <p className="text-sm text-[#6d7585]">Assembling…</p>
+                </div>
+                {emailSaved ? (
+                  <p className="text-sm text-[#a8b0c0] mt-6">
+                    Got it — we&apos;ll send the draft link to{" "}
+                    <span className="text-[#c8cedb]">{notifyEmail.trim()}</span>.
+                    You can close this page.
+                  </p>
+                ) : (
+                  <div className="mt-6 max-w-md">
+                    <p className="text-sm text-[#6d7585] mb-2">
+                      Don&apos;t want to wait here? Drop your email and we&apos;ll
+                      send the link.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        value={notifyEmail}
+                        onChange={(e) => setNotifyEmail(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") submitNotifyEmail();
+                        }}
+                        placeholder="you@example.com"
+                        className="flex-1 rounded-md bg-[#171b23] border border-[#2a3040] px-3 py-2 text-sm text-[#e8ebf2] placeholder-[#4a5164] focus:outline-none focus:border-[#6B9FD4]"
+                      />
+                      <button
+                        onClick={submitNotifyEmail}
+                        disabled={emailBusy || !notifyEmail.trim()}
+                        className="rounded-md px-4 py-2 text-sm font-medium text-[#0e1116] disabled:opacity-50"
+                        style={{ backgroundColor: ACCENT }}
+                      >
+                        {emailBusy ? "Saving…" : "Email me"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 

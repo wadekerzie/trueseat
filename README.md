@@ -40,3 +40,16 @@ npm run dev
 ```
 
 Ears service: see `services/ears/README.md`.
+
+## License
+
+Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE.md).
+
+You may read, run, modify and share this code for any **noncommercial** purpose,
+which includes reviewing or evaluating it. Commercial use is not granted.
+
+This repository is public so it can be reviewed as part of a Build with Gemini
+XPRIZE submission, whose rules require entrants' code to be either public with
+relevant licensing, or private and shared with the judging accounts. Public with
+a license is the more durable of the two: a private-repo collaborator invitation
+expires after seven days, and judging happens after the entry deadline.

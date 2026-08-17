@@ -581,6 +581,26 @@ export default function InterviewClient() {
               </div>
             )}
 
+            {stage === "asking" && (
+              <button
+                onClick={() => {
+                  if (!confirm("Start a brand-new interview? This one will be left where it is - your saved answers stay on file.")) return;
+                  localStorage.removeItem("trueseat_session");
+                  setSessionId(null);
+                  setQuestion("");
+                  setPhase("");
+                  setShowTyping(false);
+                  setTyped("");
+                  setResumeText(null);
+                  setResumeStatus(null);
+                  setStage("welcome");
+                }}
+                className="mt-12 text-xs text-[#6d7585] underline underline-offset-4"
+              >
+                Start over with a new interview
+              </button>
+            )}
+
             {stage === "recording" && (
               <div className="flex flex-col items-start gap-4">
                 <button

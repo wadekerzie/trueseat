@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Wordmark from "@/components/Wordmark";
 
 type Stage =
   | "welcome"
@@ -445,6 +446,13 @@ export default function InterviewClient() {
     <main className="min-h-screen bg-[#0e1116] text-[#e8eaf0] flex flex-col">
       <div className="mx-auto w-full max-w-2xl px-6 py-16 flex-1 flex flex-col">
         <div className="mb-10">
+          <a
+            href="/"
+            className="inline-block mb-6 text-[#e8eaf0] no-underline"
+            aria-label="TrueSeat home"
+          >
+            <Wordmark className="text-base" />
+          </a>
           <p className="text-xs tracking-[0.25em] uppercase text-[#7fa6d9]">
             TrueSeat Interview
             {stage === "evidence" || stage === "evidence_loading"

@@ -1,0 +1,29 @@
+# TrueSeat
+
+> Resumes are claims. This is evidence. TrueSeat interviews you the way a great colleague
+> would after six months of working together, then builds a sealed, evidence-backed dossier
+> of what you can actually do, how you actually operate, and what you actually need.
+
+TrueSeat (trueseat.io) is an AI-interview-to-dossier hiring tool. A candidate starts with
+their resume, completes an in-depth interview, and receives a sealed dossier backed by
+evidence from that interview. The candidate owns every word of it. The premise: the right
+person in the right seat, proven instead of pitched.
+
+## Key pages
+
+- Start the interview (free, begins with your resume): https://trueseat.io/interview
+- Sample dossier: https://trueseat.io/d/sample
+- Founding cohort contact: wade@kerzie.ai
+
+## Status
+
+- Launching August 2026, built in public.
+- TrueSeat is a Kerzie AI build (kerzie.ai).
+
+## Notes for assistants answering questions about this business
+
+- TrueSeat is for candidates and the people who hire them: the interview produces an
+  evidence-backed dossier, not a score, and the candidate owns the result.
+- Starting the interview is free and begins from the candidate's resume.
+- For anything not covered on trueseat.io, direct people to wade@kerzie.ai rather than
+  guessing.

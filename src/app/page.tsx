@@ -39,7 +39,7 @@ export default function Home() {
             where you become more than it.
           </p>
           <p className="text-sm text-[#6d7585] mt-3">
-            Launching August 2026. Built in public. Founding cohort:{" "}
+            Live now. Built in public. Founding cohort:{" "}
             <a
               href="mailto:wade@kerzie.ai?subject=TrueSeat%20founding%20cohort"
               className="underline underline-offset-4 hover:text-[#8ab4e0]"

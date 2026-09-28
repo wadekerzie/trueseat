@@ -16,7 +16,7 @@ export default function InterviewPage() {
           </p>
           <h1 className="text-3xl font-semibold mb-4">Almost ready.</h1>
           <p className="text-[#a8b0c0] leading-relaxed">
-            The interview opens with the founding cohort in August 2026. Want in
+            The interview is not open on this deployment yet. Want in
             early?{" "}
             <a
               className="underline underline-offset-4 text-[#7fa6d9]"

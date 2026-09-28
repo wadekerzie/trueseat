@@ -17,7 +17,7 @@ person in the right seat, proven instead of pitched.
 
 ## Status
 
-- Launching August 2026, built in public.
+- Live now, built in public.
 - TrueSeat is a Kerzie AI build (kerzie.ai).
 
 ## Notes for assistants answering questions about this business
